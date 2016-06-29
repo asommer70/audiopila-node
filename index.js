@@ -46,6 +46,8 @@ app.post('/sync', function(req, res) {
         }
 
         db.find({}, function (err, docs) {
+          // Add this app to the list.
+          docs[docs.length + 1] = pila;
           res.json({message: 'Sync successful.', pilas: docs, pila: pila});
         });
       });
