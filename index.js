@@ -4,6 +4,12 @@ var bodyParser = require('body-parser')
 var os = require('os');
 
 var db = new Datastore({ filename: 'db/audiopila.db', autoload: true });
+db.ensureIndex({ fieldName: 'name' }, function (err) {
+  if (err) {
+    console.log('error creating db index name err:', err);
+  }
+});
+
 
 var app = express();
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -19,7 +25,7 @@ app.get('/', function(req, res) {
 
 // POST /sync (sync device and audio details)
 app.post('/sync', function(req, res) {
-  console.log('syncing:', req.body.name);
+  console.log('syncing:', req.body.name, 'url:');
 
   var pila = {
     name: os.hostname(),
@@ -27,7 +33,8 @@ app.post('/sync', function(req, res) {
     audios: [],
     lastPlayed: undefined,
     lastSynced: Date.now(),
-    syncedFrom: req.body.name
+    syncedFrom: req.body.name,
+    httpUrl: req.protocol + '://' + req.get('host') + req.originalUrl
   }
 
   // Find the device by name.
@@ -47,8 +54,15 @@ app.post('/sync', function(req, res) {
 
         db.find({}, function (err, docs) {
           // Add this app to the list.
-          docs[docs.length + 1] = pila;
-          res.json({message: 'Sync successful.', pilas: docs, pila: pila});
+          docs[docs.length] = pila;
+
+          // Create an object from the docs Array.
+          var pilas = {};
+          docs.forEach((doc) => {
+            pilas[doc.name] = doc;
+          })
+
+          res.json({message: 'Sync successful.', pilas: pilas, pila: pila});
         });
       });
     }
