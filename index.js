@@ -3,6 +3,8 @@ var Datastore = require('nedb');
 var bodyParser = require('body-parser')
 var os = require('os');
 
+var PilaApi = require('./lib/pila_api');
+
 var db = new Datastore({ filename: 'db/audiopila.db', autoload: true });
 db.ensureIndex({ fieldName: 'name' }, function (err) {
   if (err) {
@@ -23,9 +25,34 @@ app.get('/', function(req, res) {
   });
 });
 
+// POST /audios (add Audios in directory)
+app.post('/audios', function(req, res) {
+  console.log('req.body:', req.body);
+    PilaApi.getLocalFiles(req.body.path, (files) => {
+      var parts = req.body.path.split('/');
+      var repository = {name: parts[parts.length - 1], path: req.body.path};
+
+      var audioFiles = files.filter((file) => {
+        var ext = file.substr(file.length - 4);
+        if (/\.mp3|\.m4a|\.mp4|\.ogg|\.mkv|\.wav/g.exec(ext) !== null) {
+          return file;
+        }
+      })
+
+      PilaApi.getAudios(audioFiles, req.body.path, repository, (audios) => {
+        db.insert({audios: audios}, function(error, doc) {
+          if (error) {
+            console.log('audios db.insert error:', error);
+          }
+          res.json({message: 'Successfully added audios.', audios: audios});
+        })
+      });
+    });
+})
+
 // POST /sync (sync device and audio details)
 app.post('/sync', function(req, res) {
-  console.log('syncing:', req.body.name, 'url:');
+  console.log('syncing:', req.body.name);
 
   var pila = {
     name: os.hostname(),
