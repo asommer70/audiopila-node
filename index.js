@@ -16,7 +16,7 @@ app.get('/', function(req, res) {
   })
 });
 
-// GET / (index of audios)
+// GET /audios (index of audios)
 app.get('/audios', function(req, res) {
   DataApi.getAudios((audios) => {
     res.json(audios);
@@ -52,6 +52,13 @@ app.post('/audios', function(req, res) {
       })
     });
 })
+
+// GET /pilas (index of pilas)
+app.get('/pilas', function(req, res) {
+  DataApi.getPilas((pilas) => {
+    res.json(pilas);
+  })
+});
 
 // POST /sync (sync device and audio details)
 app.post('/sync', function(req, res) {
