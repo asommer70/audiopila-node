@@ -64,25 +64,28 @@ app.get('/pilas', function(req, res) {
 app.post('/sync', function(req, res) {
   console.log('syncing:', req.body.name);
 
+  // Update the local pila entry with httpUrl, lastSynced, syncedFrom, and Audios?
   var me = {
     name: os.hostname(),
-    platform: os.platform(),
-    audios: [],
-    lastPlayed: undefined,
+    httpUrl: req.protocol + '://' + req.get('host') + req.originalUrl,
     lastSynced: Date.now(),
     syncedFrom: req.body.name,
-    httpUrl: req.protocol + '://' + req.get('host') + req.originalUrl,
     type: 'pila'
   }
+  DataApi.updatePila(me, (pilas) => {
+    console.log('Updated me...');
+  })
 
   DataApi.getPila(req.body.name, (pilas) => {
     if (pilas == null) {
+      console.log('adding pilas:', pilas);
       DataApi.addPila(req.body, (pilas) => {
-        res.json({message: 'Sync successful.', pilas: docs});
+        res.json({message: 'Sync successful.', pilas: pilas, pila: pilas[me.name]});
       })
     } else {
-      DataApi.updatePila(req.body, me, (pilas) => {
-        res.json({message: 'Sync successful.', pilas: pilas, pila: pilas[req.body.name]});
+      console.log('updating pilas...');
+      DataApi.updatePila(req.body, (pilas) => {
+        res.json({message: 'Sync successful.', pilas: pilas, pila: pilas[me.name]});
       })
     }
   })
@@ -95,6 +98,22 @@ app.use(function(err, req, res, next) {
   res.status(500).send({status:500, message: 'internal error', type:'internal'});
 })
 
-app.listen(3000, function() {
+app.listen(3000, () => {
+  // Add pilas entry for this device if it's not there.
+  var me = {
+    name: os.hostname(),
+    platform: os.platform(),
+    audios: [],
+    type: 'pila'
+  }
+
+  DataApi.getPila(os.hostname(), function(pilas) {
+    if (pilas == null) {
+      DataApi.addPila(me, function(pilas) {
+        console.log('Added local Pila...');
+      });
+    }
+  })
+
   console.log('Example app listening on port 3000!');
 });
