@@ -46,6 +46,18 @@ app.post('/audios', function(req, res) {
           audios[audio.slug] = audio;
           counter++;
           if (counter == audioFiles.length) {
+
+            // Add Audios to local Pila.
+            DataApi.getPila(os.hostname(), function(pilas) {
+              if (pilas != null) {
+                var pila = pilas[0];
+                pila.audios = audios;
+                DataApi.updatePila(pila, (pilas) => {
+                  console.log('updated me with audios...');
+                })
+              }
+            })
+
             res.json({message: 'Successfully added audios.', audios: audios});
           }
         });
@@ -72,13 +84,13 @@ app.post('/sync', function(req, res) {
     syncedFrom: req.body.name,
     type: 'pila'
   }
+
   DataApi.updatePila(me, (pilas) => {
     console.log('Updated me...');
   })
 
   DataApi.getPila(req.body.name, (pilas) => {
     if (pilas == null) {
-      console.log('adding pilas:', pilas);
       DataApi.addPila(req.body, (pilas) => {
         res.json({message: 'Sync successful.', pilas: pilas, pila: pilas[me.name]});
       })
