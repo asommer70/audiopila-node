@@ -43,7 +43,7 @@ app.post('/audios', function(req, res) {
       var counter = 0;
 
       audioFiles.forEach((file) => {
-        DataApi.getAudio(file, req.body.path, repository, (audio) => {
+        DataApi.getAudio(file, req.body.path, repository, req, (audio) => {
           audios[audio.slug] = audio;
           counter++;
           if (counter == audioFiles.length) {
