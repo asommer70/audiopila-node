@@ -3,12 +3,14 @@ var Datastore = require('nedb');
 var bodyParser = require('body-parser')
 var os = require('os');
 var fs = require('fs');
+var busboy = require('connect-busboy');
 
 var DataApi = require('./lib/data_api');
 
 var app = express();
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(busboy({ immediate: true }));
 
 // GET / (index of everything)
 app.get('/', function(req, res) {
@@ -53,6 +55,15 @@ app.post('/audios', function(req, res) {
               if (pilas != null) {
                 var pila = pilas[0];
                 pila.audios = audios;
+
+                // Add/create repositories object on the Pila.
+                if (!pila.repositories) {
+                  pila.repositories = {};
+                }
+                if (pila.repositories[repository.name] == undefined) {
+                  pila.repositories[repository.name] = repository;
+                }
+
                 DataApi.updatePila(pila, (pilas) => {
                   console.log('updated me with audios...');
                 })
@@ -94,7 +105,8 @@ app.post('/sync', function(req, res) {
   // Update the local pila entry with httpUrl, lastSynced, syncedFrom, and Audios?
   var me = {
     name: os.hostname(),
-    httpUrl: req.protocol + '://' + req.get('host') + req.originalUrl,
+    baseUrl: req.protocol + '://' + req.get('host'),
+    syncUrl: req.protocol + '://' + req.get('host') + req.originalUrl,
     lastSynced: Date.now(),
     syncedFrom: req.body.name,
     type: 'pila'
@@ -121,6 +133,30 @@ app.post('/sync', function(req, res) {
   })
 });
 
+// POST /repos/:name (upload Audios to repository)
+app.post('/repos/:name', function(req, res) {
+  if (req.busboy) {
+    req.busboy.on('field', (key, value, keyTruncated, valueTruncated) => {
+
+      if (key == 'repoName') {
+        req.busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+          DataApi.getPila(os.hostname(), (pilas) => {
+            var pila = pilas[0];
+            var repo = pila.repositories[value];
+
+            fstream = fs.createWriteStream(repo.path + '/' + filename);
+            file.pipe(fstream);
+            fstream.on('close', () => {
+              console.log(filename + ' uploaded to: ' + repo.path);
+              res.json({message: 'Audio uploaded to: ' + req.params.name, pila: pila});
+            });
+          })
+        });
+      }
+    });
+  }
+})
+
 // Send Errors in JSON.
 app.use(function(err, req, res, next) {
   // Do logging and user-friendly error message display
@@ -134,7 +170,7 @@ app.listen(3000, () => {
     name: os.hostname(),
     platform: os.platform(),
     audios: [],
-    type: 'pila'
+    type: 'pila',
   }
 
   DataApi.getPila(os.hostname(), function(pilas) {
