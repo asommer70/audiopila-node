@@ -2,6 +2,7 @@ var express = require('express');
 var Datastore = require('nedb');
 var bodyParser = require('body-parser')
 var os = require('os');
+var fs = require('fs');
 
 var DataApi = require('./lib/data_api');
 
@@ -63,7 +64,21 @@ app.post('/audios', function(req, res) {
         });
       })
     });
-})
+});
+
+// GET /audios/:name (download Audio from repository)
+app.get('/audios/:slug', function(req, res) {
+  DataApi.findAudio(req.params.slug, (audio) => {
+    var stat = fs.statSync(audio.path);
+    res.writeHead(200, {
+        'Content-Type': 'audio/mpeg',
+        'Content-Length': stat.size
+    });
+
+    var readStream = fs.createReadStream(audio.path);
+    readStream.pipe(res);
+  })
+});
 
 // GET /pilas (index of pilas)
 app.get('/pilas', function(req, res) {
@@ -85,9 +100,12 @@ app.post('/sync', function(req, res) {
     type: 'pila'
   }
 
-  DataApi.updatePila(me, (pilas) => {
-    console.log('Updated me...');
-  })
+  DataApi.getPila(os.hostname(), (pilas) => {
+    Object.assign(me, pilas[0]);
+    DataApi.updatePila(me, (pilas) => {
+      console.log('Updated me...');
+    })
+  });
 
   DataApi.getPila(req.body.name, (pilas) => {
     if (pilas == null) {
