@@ -4,6 +4,7 @@ var bodyParser = require('body-parser')
 var os = require('os');
 var fs = require('fs');
 var busboy = require('connect-busboy');
+var request = require('request');
 
 var DataApi = require('./lib/data_api');
 
@@ -41,15 +42,17 @@ app.post('/audios', function(req, res) {
       })
 
       // Use a counter to execute the res.json.
-      var audios = {};
+      // var audios = {};
       var counter = 0;
 
-      if (audioFiles.length == 0) {
-        // Add Audios to local Pila.
-        DataApi.getPila(os.hostname(), (pilas) => {
+      DataApi.getPila(os.hostname(), (pilas) => {
+        var pila = pilas[0];
+        // var audios = pila.audios;
+
+        if (audioFiles.length == 0) {
+          // Add Audios to local Pila.
           if (pilas != null) {
-            var pila = pilas[0];
-            pila.audios = audios;
+            pila.audios = {};
 
             // Add/create repositories object on the Pila.
             if (!pila.repositories) {
@@ -63,41 +66,21 @@ app.post('/audios', function(req, res) {
               console.log('updated me with audios...');
             })
           }
-        });
+        }
 
-        res.json({message: 'Successfully added audios.', audios: audios});
-      }
-
-      audioFiles.forEach((file) => {
-        DataApi.getAudio(file, req.body.path, repository, req, (audio) => {
-          audios[audio.slug] = audio;
-          counter++;
-          if (counter == audioFiles.length) {
-
-            // Add Audios to local Pila.
-            DataApi.getPila(os.hostname(), (pilas) => {
-              if (pilas != null) {
-                var pila = pilas[0];
-                pila.audios = audios;
-
-                // Add/create repositories object on the Pila.
-                if (!pila.repositories) {
-                  pila.repositories = {};
-                }
-                if (pila.repositories[repository.name] == undefined) {
-                  pila.repositories[repository.name] = repository;
-                }
-
-                DataApi.updatePila(pila, (pilas) => {
-                  console.log('updated me with audios...');
-                })
-              }
-            })
-
-            res.json({message: 'Successfully added audios.', audios: audios});
-          }
-        });
-      })
+        audioFiles.forEach((file) => {
+          DataApi.getAudio(file, req.body.path, repository, req, (audio) => {
+            pila.audios[audio.slug] = audio;
+            counter++;
+            if (counter == audioFiles.length) {
+              DataApi.updatePila(pila, (pilas) => {
+                console.log('updated me with audios...');
+              })
+              res.json({message: 'Successfully added audios.', audios: pila.audios});
+            }
+          });
+        })
+      });
     });
 });
 
@@ -173,7 +156,13 @@ app.post('/repos/:slug', function(req, res) {
             fstream.on('close', () => {
               console.log(filename + ' uploaded to: ' + repo.path);
 
-              // TODO:as update Pila's audios.
+              // Send a POST to /audios to updated the local repo's Audios list.
+              var options = {
+                uri: req.protocol + '://' + req.get('host') + '/audios/',
+                method: 'POST',
+                json: repo
+              };
+              request(options, (error, response, body) => {});
 
               res.json({message: 'Audio uploaded to: ' + repo.path, pila: pila});
             });
