@@ -30,8 +30,7 @@ app.get('/audios', function(req, res) {
 app.post('/audios', function(req, res) {
   console.log('req.body:', req.body);
     DataApi.getLocalFiles(req.body.path, (files) => {
-      var parts = req.body.path.split('/');
-      var repository = {name: parts[parts.length - 1], path: req.body.path};
+      var repository = {name: req.body.name, path: req.body.path};
 
       var audioFiles = files.filter((file) => {
         var ext = file.substr(file.length - 4);
@@ -44,6 +43,30 @@ app.post('/audios', function(req, res) {
       var audios = {};
       var counter = 0;
 
+      if (audioFiles.length == 0) {
+        // Add Audios to local Pila.
+        DataApi.getPila(os.hostname(), (pilas) => {
+          if (pilas != null) {
+            var pila = pilas[0];
+            pila.audios = audios;
+
+            // Add/create repositories object on the Pila.
+            if (!pila.repositories) {
+              pila.repositories = {};
+            }
+            if (pila.repositories[repository.name] == undefined) {
+              pila.repositories[repository.name] = repository;
+            }
+
+            DataApi.updatePila(pila, (pilas) => {
+              console.log('updated me with audios...');
+            })
+          }
+        });
+
+        res.json({message: 'Successfully added audios.', audios: audios});
+      }
+
       audioFiles.forEach((file) => {
         DataApi.getAudio(file, req.body.path, repository, req, (audio) => {
           audios[audio.slug] = audio;
@@ -51,7 +74,7 @@ app.post('/audios', function(req, res) {
           if (counter == audioFiles.length) {
 
             // Add Audios to local Pila.
-            DataApi.getPila(os.hostname(), function(pilas) {
+            DataApi.getPila(os.hostname(), (pilas) => {
               if (pilas != null) {
                 var pila = pilas[0];
                 pila.audios = audios;
@@ -135,6 +158,8 @@ app.post('/sync', function(req, res) {
 
 // POST /repos/:name (upload Audios to repository)
 app.post('/repos/:name', function(req, res) {
+  console.log('Uploading to: ' + req.params.name);
+  
   if (req.busboy) {
     req.busboy.on('field', (key, value, keyTruncated, valueTruncated) => {
 
