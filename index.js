@@ -31,6 +31,7 @@ app.post('/audios', function(req, res) {
   console.log('req.body:', req.body);
     DataApi.getLocalFiles(req.body.path, (files) => {
       var repository = {name: req.body.name, path: req.body.path};
+      repository.slug = req.body.name.replace(/\s/g, '_').replace(/\./g, '_').toLowerCase();
 
       var audioFiles = files.filter((file) => {
         var ext = file.substr(file.length - 4);
@@ -54,8 +55,8 @@ app.post('/audios', function(req, res) {
             if (!pila.repositories) {
               pila.repositories = {};
             }
-            if (pila.repositories[repository.name] == undefined) {
-              pila.repositories[repository.name] = repository;
+            if (pila.repositories[repository.slug] == undefined) {
+              pila.repositories[repository.slug] = repository;
             }
 
             DataApi.updatePila(pila, (pilas) => {
@@ -156,14 +157,12 @@ app.post('/sync', function(req, res) {
   })
 });
 
-// POST /repos/:name (upload Audios to repository)
-app.post('/repos/:name', function(req, res) {
-  console.log('Uploading to: ' + req.params.name);
-  
+// POST /repos/:slug (upload Audios to repository)
+app.post('/repos/:slug', function(req, res) {
   if (req.busboy) {
     req.busboy.on('field', (key, value, keyTruncated, valueTruncated) => {
 
-      if (key == 'repoName') {
+      if (key == 'slug') {
         req.busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
           DataApi.getPila(os.hostname(), (pilas) => {
             var pila = pilas[0];
@@ -173,7 +172,10 @@ app.post('/repos/:name', function(req, res) {
             file.pipe(fstream);
             fstream.on('close', () => {
               console.log(filename + ' uploaded to: ' + repo.path);
-              res.json({message: 'Audio uploaded to: ' + req.params.name, pila: pila});
+
+              // TODO:as update Pila's audios.
+
+              res.json({message: 'Audio uploaded to: ' + repo.path, pila: pila});
             });
           })
         });
