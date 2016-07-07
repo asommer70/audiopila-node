@@ -8,6 +8,8 @@ var request = require('request');
 
 var DataApi = require('./lib/data_api');
 
+var hostname = require('os').hostname().split('.').shift();
+
 var app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -41,11 +43,12 @@ app.post('/audios', function(req, res) {
         }
       })
 
+      console.log('audioFiles.length:', audioFiles.length);
+
       // Use a counter to execute the res.json.
-      // var audios = {};
       var counter = 0;
 
-      DataApi.getPila(os.hostname(), (pilas) => {
+      DataApi.getPila(hostname, (pilas) => {
         var pila = pilas[0];
         // var audios = pila.audios;
 
@@ -66,20 +69,27 @@ app.post('/audios', function(req, res) {
               console.log('updated me with audios...');
             })
           }
-        }
+        } else {
+          if (!pila.repositories) {
+            pila.repositories = {};
+          }
+          if (pila.repositories[repository.slug] == undefined) {
+            pila.repositories[repository.slug] = repository;
+          }
 
-        audioFiles.forEach((file) => {
-          DataApi.getAudio(file, req.body.path, repository, req, (audio) => {
-            pila.audios[audio.slug] = audio;
-            counter++;
-            if (counter == audioFiles.length) {
-              DataApi.updatePila(pila, (pilas) => {
-                console.log('updated me with audios...');
-              })
-              res.json({message: 'Successfully added audios.', audios: pila.audios});
-            }
-          });
-        })
+          audioFiles.forEach((file) => {
+            DataApi.getAudio(file, req.body.path, repository, req, (audio) => {
+              pila.audios[audio.slug] = audio;
+              counter++;
+              if (counter == audioFiles.length) {
+                DataApi.updatePila(pila, (pilas) => {
+                  console.log('Updated me with ' + audioFiles.length + ' audios...');
+                })
+                res.json({message: 'Successfully added audios.', audios: pila.audios});
+              }
+            });
+          })
+        }
       });
     });
 });
@@ -111,7 +121,7 @@ app.post('/sync', function(req, res) {
 
   // Update the local pila entry with httpUrl, lastSynced, syncedFrom, and Audios?
   var me = {
-    name: os.hostname(),
+    name: hostname,
     baseUrl: req.protocol + '://' + req.get('host'),
     syncUrl: req.protocol + '://' + req.get('host') + req.originalUrl,
     lastSynced: Date.now(),
@@ -119,25 +129,26 @@ app.post('/sync', function(req, res) {
     type: 'pila'
   }
 
-  DataApi.getPila(os.hostname(), (pilas) => {
+  // Update Me
+  DataApi.getPila(hostname, (pilas) => {
     Object.assign(me, pilas[0]);
     DataApi.updatePila(me, (pilas) => {
       console.log('Updated me...');
+
+      DataApi.getPila(req.body.name, (pilas) => {
+        if (pilas == null) {
+          DataApi.addPila(req.body, (pilas) => {
+            res.json({message: 'Sync successful.', pilas: pilas, pila: pilas[me.name]});
+          })
+        } else {
+          console.log('updating pilas...');
+          DataApi.updatePila(req.body, (pilas) => {
+            res.json({message: 'Sync successful.', pilas: pilas, pila: pilas[me.name]});
+          })
+        }
+      })
     })
   });
-
-  DataApi.getPila(req.body.name, (pilas) => {
-    if (pilas == null) {
-      DataApi.addPila(req.body, (pilas) => {
-        res.json({message: 'Sync successful.', pilas: pilas, pila: pilas[me.name]});
-      })
-    } else {
-      console.log('updating pilas...');
-      DataApi.updatePila(req.body, (pilas) => {
-        res.json({message: 'Sync successful.', pilas: pilas, pila: pilas[me.name]});
-      })
-    }
-  })
 });
 
 // POST /repos/:slug (upload Audios to repository)
@@ -147,25 +158,29 @@ app.post('/repos/:slug', function(req, res) {
 
       if (key == 'slug') {
         req.busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
-          DataApi.getPila(os.hostname(), (pilas) => {
-            var pila = pilas[0];
-            var repo = pila.repositories[value];
+          DataApi.getPila(hostname, (pilas) => {
+            if (pilas) {
+              var pila = pilas[0];
+              var repo = pila.repositories[value];
 
-            fstream = fs.createWriteStream(repo.path + '/' + filename);
-            file.pipe(fstream);
-            fstream.on('close', () => {
-              console.log(filename + ' uploaded to: ' + repo.path);
+              fstream = fs.createWriteStream(repo.path + '/' + filename);
+              file.pipe(fstream);
+              fstream.on('close', () => {
+                console.log(filename + ' uploaded to: ' + repo.path);
 
-              // Send a POST to /audios to updated the local repo's Audios list.
-              var options = {
-                uri: req.protocol + '://' + req.get('host') + '/audios/',
-                method: 'POST',
-                json: repo
-              };
-              request(options, (error, response, body) => {});
+                // Send a POST to /audios to updated the local repo's Audios list.
+                var options = {
+                  uri: req.protocol + '://' + req.get('host') + '/audios/',
+                  method: 'POST',
+                  json: repo
+                };
+                request(options, (error, response, body) => {});
 
-              res.json({message: 'Audio uploaded to: ' + repo.path, pila: pila});
-            });
+                res.json({message: 'Audio uploaded to: ' + repo.path, pila: pila});
+              });
+            } else {
+              res.json({message: 'Audio could not be uploaded.'});
+            }
           })
         });
       }
@@ -183,13 +198,13 @@ app.use(function(err, req, res, next) {
 app.listen(3000, () => {
   // Add pilas entry for this device if it's not there.
   var me = {
-    name: os.hostname(),
+    name: hostname,
     platform: os.platform(),
-    audios: [],
+    audios: {},
     type: 'pila',
   }
 
-  DataApi.getPila(os.hostname(), function(pilas) {
+  DataApi.getPila(hostname, function(pilas) {
     if (pilas == null) {
       DataApi.addPila(me, function(pilas) {
         console.log('Added local Pila...');
