@@ -130,7 +130,6 @@ app.post('/sync', function(req, res) {
     name: hostname,
     baseUrl: req.protocol + '://' + req.get('host'),
     syncUrl: req.protocol + '://' + req.get('host') + req.originalUrl,
-    lastSynced: Date.now(),
     syncedFrom: req.body.name,
   }
 
@@ -139,6 +138,7 @@ app.post('/sync', function(req, res) {
     // console.log('pilas[0].audios:', pilas[0].audios);
     // Object.assign(pilas[0], me);
     for (var attrname in pilas[0]) { me[attrname] = pilas[0][attrname]; }
+    me.lastSynced = Date.now();
 
     // Update Me
     DataApi.updatePila(me, (pilas) => {
@@ -147,7 +147,7 @@ app.post('/sync', function(req, res) {
       DataApi.getPila(req.body.name, (pilas) => {
         if (pilas == null) {
           DataApi.addPila(req.body, (pilas) => {
-            // TODO:as Update Audios
+            // Update Audios
             DataApi.updateAudiosSync(pilas[req.body.name].audios, pilas[me.name].audios, (audios) => {
               me.audios = audios;
 
