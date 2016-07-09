@@ -64,6 +64,9 @@ app.post('/audios', function(req, res) {
             if (pila.repositories[repository.slug] == undefined) {
               pila.repositories[repository.slug] = repository;
             }
+            if (!pila.audios) {
+              pila.audios = {};
+            }
 
             DataApi.updatePila(pila, (pilas) => {
               console.log('updated me with audios...');
@@ -75,6 +78,9 @@ app.post('/audios', function(req, res) {
           }
           if (pila.repositories[repository.slug] == undefined) {
             pila.repositories[repository.slug] = repository;
+          }
+          if (!pila.audios) {
+            pila.audios = {};
           }
 
           audioFiles.forEach((file) => {
@@ -126,24 +132,42 @@ app.post('/sync', function(req, res) {
     syncUrl: req.protocol + '://' + req.get('host') + req.originalUrl,
     lastSynced: Date.now(),
     syncedFrom: req.body.name,
-    type: 'pila'
   }
 
-  // Update Me
+  // Get Me
   DataApi.getPila(hostname, (pilas) => {
-    Object.assign(me, pilas[0]);
+    // console.log('pilas[0].audios:', pilas[0].audios);
+    // Object.assign(pilas[0], me);
+    for (var attrname in pilas[0]) { me[attrname] = pilas[0][attrname]; }
+
+    // Update Me
     DataApi.updatePila(me, (pilas) => {
       console.log('Updated me...');
 
       DataApi.getPila(req.body.name, (pilas) => {
         if (pilas == null) {
           DataApi.addPila(req.body, (pilas) => {
-            res.json({message: 'Sync successful.', pilas: pilas, pila: pilas[me.name]});
+            // TODO:as Update Audios
+            DataApi.updateAudiosSync(pilas[req.body.name].audios, pilas[me.name].audios, (audios) => {
+              me.audios = audios;
+
+              DataApi.updatePila(me, (pilas) => {
+                res.json({message: 'Sync successful.', pilas: pilas, pila: pilas[me.name]});
+              })
+            })
           })
         } else {
           console.log('updating pilas...');
+
+          // Update synced Pila.
           DataApi.updatePila(req.body, (pilas) => {
-            res.json({message: 'Sync successful.', pilas: pilas, pila: pilas[me.name]});
+            DataApi.updateAudiosSync(pilas[req.body.name].audios, pilas[me.name].audios, (audios) => {
+              me.audios = audios;
+
+              DataApi.updatePila(me, (pilas) => {
+                res.json({message: 'Sync successful.', pilas: pilas, pila: pilas[me.name]});
+              })
+            })
           })
         }
       })
