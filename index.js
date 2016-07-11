@@ -5,10 +5,14 @@ var os = require('os');
 var fs = require('fs');
 var busboy = require('connect-busboy');
 var request = require('request');
+// var Player = require('player');
 
 var DataApi = require('./lib/data_api');
+var PlayerApi = require('./lib/player_api');
 
 var hostname = require('os').hostname().split('.').shift();
+// var player = new Player();
+var player = {};
 
 var app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -100,7 +104,7 @@ app.post('/audios', function(req, res) {
     });
 });
 
-// GET /audios/:name (download Audio from repository)
+// GET /audios/:slug (download Audio from repository)
 app.get('/audios/:slug', function(req, res) {
   DataApi.findAudio(req.params.slug, (audio) => {
     var stat = fs.statSync(audio.path);
@@ -113,6 +117,47 @@ app.get('/audios/:slug', function(req, res) {
     readStream.pipe(res);
   })
 });
+
+// PUT /audios/:slug (play Audio)
+app.put('/audios/:slug', function(req, res) {
+  switch (req.body.action) {
+    case 'play':
+    console.log('playing...');
+      PlayerApi.play(req.params.slug, (data) => {
+        console.log('data:', data);
+        res.json({data: data});
+      })
+      break;
+
+    case 'pause':
+      console.log('pausing...');
+      PlayerApi.pause(req.params.slug, (data) => {
+        console.log('data:', data);
+
+        DataApi.updateAudio(data.audio, (audio) => {
+          res.json({audio: audio});
+        })
+      })
+      break;
+
+    case 'forward':
+      console.log('going forward...');
+      PlayerApi.forward(req.params.slug, (data) => {
+        console.log('data:', data);
+
+        res.json({audio: data});
+      })
+      break;
+    case 'backward':
+      console.log('going backward...');
+      PlayerApi.backward(req.params.slug, (data) => {
+        console.log('data:', data);
+
+        res.json({audio: data});
+      })
+      break;
+  }
+})
 
 // GET /pilas (index of pilas)
 app.get('/pilas', function(req, res) {
@@ -236,5 +281,5 @@ app.listen(3000, () => {
     }
   })
 
-  console.log('Example app listening on port 3000!');
+  console.log('Audio Pila! listening on port 3000!');
 });
