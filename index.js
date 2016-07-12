@@ -125,31 +125,35 @@ app.put('/audios/:slug', function(req, res) {
     case 'play':
     console.log('playing...');
       PlayerApi.play(req.params.slug, (data) => {
-        res.json({data: data});
+        res.json(data);
       })
       break;
 
     case 'pause':
       console.log('pausing...');
       PlayerApi.pause(req.params.slug, (data) => {
-        data.audio.playedTime = Date.now();
+        if (data.hasOwnProperty('audio')) {
+          data.audio.playedTime = Date.now();
 
-        DataApi.updateAudio(data.audio, (audio) => {
-          res.json({audio: audio});
-        })
+          DataApi.updateAudio(data.audio, (audio) => {
+            res.json(data);
+          })
+        } else {
+          res.json(data);
+        }
       })
       break;
 
     case 'forward':
       console.log('going forward...');
-      PlayerApi.forward(req.params.slug, (data) => {
-        res.json({audio: data});
+      PlayerApi.seek(req.params.slug, 'forward', (data) => {
+        res.json(data);
       })
       break;
     case 'backward':
       console.log('going backward...');
-      PlayerApi.backward(req.params.slug, (data) => {
-        res.json({audio: data});
+      PlayerApi.seek(req.params.slug, 'backward', (data) => {
+        res.json(data);
       })
       break;
   }
