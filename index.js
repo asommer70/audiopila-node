@@ -114,6 +114,7 @@ app.get('/audios/:slug', function(req, res) {
     });
 
     var readStream = fs.createReadStream(audio.path);
+    res.audio = audio;
     readStream.pipe(res);
   })
 });
@@ -133,6 +134,7 @@ app.put('/audios/:slug', function(req, res) {
       console.log('pausing...');
       PlayerApi.pause(req.params.slug, (data) => {
         console.log('data:', data);
+        data.audio.playedTime = Date.now();
 
         DataApi.updateAudio(data.audio, (audio) => {
           res.json({audio: audio});
@@ -165,6 +167,13 @@ app.get('/pilas', function(req, res) {
     res.json(pilas);
   })
 });
+
+// DELETE /pilas/:name (remove pila)
+app.delete('/pilas/:name', function(req, res) {
+  DataApi.deletePila(req.params.name, (data) => {
+    res.json(data);
+  })
+})
 
 // POST /sync (sync device and audio details)
 app.post('/sync', function(req, res) {
