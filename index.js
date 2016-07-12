@@ -125,7 +125,6 @@ app.put('/audios/:slug', function(req, res) {
     case 'play':
     console.log('playing...');
       PlayerApi.play(req.params.slug, (data) => {
-        console.log('data:', data);
         res.json({data: data});
       })
       break;
@@ -133,7 +132,6 @@ app.put('/audios/:slug', function(req, res) {
     case 'pause':
       console.log('pausing...');
       PlayerApi.pause(req.params.slug, (data) => {
-        console.log('data:', data);
         data.audio.playedTime = Date.now();
 
         DataApi.updateAudio(data.audio, (audio) => {
@@ -145,16 +143,12 @@ app.put('/audios/:slug', function(req, res) {
     case 'forward':
       console.log('going forward...');
       PlayerApi.forward(req.params.slug, (data) => {
-        console.log('data:', data);
-
         res.json({audio: data});
       })
       break;
     case 'backward':
       console.log('going backward...');
       PlayerApi.backward(req.params.slug, (data) => {
-        console.log('data:', data);
-
         res.json({audio: data});
       })
       break;
