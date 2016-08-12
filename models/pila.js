@@ -34,6 +34,18 @@ var Pila = {
     });
   },
 
+  updatePila: function(pila, callback) {
+    db.update({ name: pila.name }, pila, {}, (err, numReplaced) => {
+      if (err) {
+        console.log('updatePila find err:', err);
+      }
+
+      this.findByName(pila.name, (pila) => {
+        callback(pila);
+      });
+    })
+  },
+
   deletePila: (name, callback) => {
     this.findByName(name, (pilas) => {
       if (pilas) {

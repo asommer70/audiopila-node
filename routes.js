@@ -6,6 +6,7 @@ var router = express.Router();
 
 var PilaController = require('./controllers/pila_controller');
 var AudioController = require('./controllers/audio_controller');
+var RepoController = require('./controllers/repo_controller');
 var DataApi = require('./lib/data_api');
 
 router.use(bodyParser.urlencoded({ extended: false }));
@@ -28,77 +29,81 @@ router.get('/audios', AudioController.audios);
 // GET /audios/:slug (download Audio from repository)
 router.get('/audios/:slug', AudioController.audio);
 
+// GET /repos (index of repositories)
+router.get('/repos', RepoController.repos);
+
 
 // POST /audios (add Audios in directory)
-router.post('/audios', function(req, res) {
-  console.log('req.body:', req.body);
-    DataApi.getLocalFiles(req.body.path, (files) => {
-      var repository = {name: req.body.name, path: req.body.path};
-      repository.slug = req.body.name.replace(/\s/g, '_').replace(/\./g, '_').toLowerCase();
-
-      var audioFiles = files.filter((file) => {
-        var ext = file.substr(file.length - 4);
-        if (/\.mp3|\.m4a|\.mp4|\.ogg|\.mkv|\.wav/g.exec(ext) !== null) {
-          return file;
-        }
-      })
-
-      console.log('audioFiles.length:', audioFiles.length);
-
-      // Use a counter to execute the res.json.
-      var counter = 0;
-
-      DataApi.getPila(hostname, (pilas) => {
-        var pila = pilas[0];
-        // var audios = pila.audios;
-
-        if (audioFiles.length == 0) {
-          // Add Audios to local Pila.
-          if (pilas != null) {
-            pila.audios = {};
-
-            // Add/create repositories object on the Pila.
-            if (!pila.repositories) {
-              pila.repositories = {};
-            }
-            if (pila.repositories[repository.slug] == undefined) {
-              pila.repositories[repository.slug] = repository;
-            }
-            if (!pila.audios) {
-              pila.audios = {};
-            }
-
-            DataApi.updatePila(pila, (pilas) => {
-              console.log('updated me with audios...');
-            })
-          }
-        } else {
-          if (!pila.repositories) {
-            pila.repositories = {};
-          }
-          if (pila.repositories[repository.slug] == undefined) {
-            pila.repositories[repository.slug] = repository;
-          }
-          if (!pila.audios) {
-            pila.audios = {};
-          }
-
-          audioFiles.forEach((file) => {
-            DataApi.getAudio(file, req.body.path, repository, req, (audio) => {
-              pila.audios[audio.slug] = audio;
-              counter++;
-              if (counter == audioFiles.length) {
-                DataApi.updatePila(pila, (pilas) => {
-                  console.log('Updated me with ' + audioFiles.length + ' audios...');
-                })
-                res.json({message: 'Successfully added audios.', audios: pila.audios});
-              }
-            });
-          })
-        }
-      });
-    });
-});
+router.post('/audios', AudioController.addRepoAudios);
+// router.post('/audios', function(req, res) {
+//   console.log('req.body:', req.body);
+//     DataApi.getLocalFiles(req.body.path, (files) => {
+//       var repository = {name: req.body.name, path: req.body.path};
+//       repository.slug = req.body.name.replace(/\s/g, '_').replace(/\./g, '_').toLowerCase();
+//
+//       var audioFiles = files.filter((file) => {
+//         var ext = file.substr(file.length - 4);
+//         if (/\.mp3|\.m4a|\.mp4|\.ogg|\.mkv|\.wav/g.exec(ext) !== null) {
+//           return file;
+//         }
+//       })
+//
+//       console.log('audioFiles.length:', audioFiles.length);
+//
+//       // Use a counter to execute the res.json.
+//       var counter = 0;
+//
+//       DataApi.getPila(hostname, (pilas) => {
+//         var pila = pilas[0];
+//         // var audios = pila.audios;
+//
+//         if (audioFiles.length == 0) {
+//           // Add Audios to local Pila.
+//           if (pilas != null) {
+//             pila.audios = {};
+//
+//             // Add/create repositories object on the Pila.
+//             if (!pila.repositories) {
+//               pila.repositories = {};
+//             }
+//             if (pila.repositories[repository.slug] == undefined) {
+//               pila.repositories[repository.slug] = repository;
+//             }
+//             if (!pila.audios) {
+//               pila.audios = {};
+//             }
+//
+//             DataApi.updatePila(pila, (pilas) => {
+//               console.log('updated me with audios...');
+//             })
+//           }
+//         } else {
+//           if (!pila.repositories) {
+//             pila.repositories = {};
+//           }
+//           if (pila.repositories[repository.slug] == undefined) {
+//             pila.repositories[repository.slug] = repository;
+//           }
+//           if (!pila.audios) {
+//             pila.audios = {};
+//           }
+//
+//           audioFiles.forEach((file) => {
+//             DataApi.getAudio(file, req.body.path, repository, req, (audio) => {
+//               pila.audios[audio.slug] = audio;
+//               counter++;
+//               if (counter == audioFiles.length) {
+//                 DataApi.updatePila(pila, (pilas) => {
+//                   console.log('Updated me with ' + audioFiles.length + ' audios...');
+//                 })
+//                 res.json({message: 'Successfully added audios.', audios: pila.audios});
+//               }
+//             });
+//           })
+//         }
+//       });
+//     });
+// });
 
 // POST /sync (sync device and audio details)
 router.post('/sync', function(req, res) {
@@ -234,7 +239,10 @@ router.put('/audios/:slug', function(req, res) {
 
 
 // DELETE /pilas/:name (remove pila)
-router.delete('/pilas/:name', PilaController.deletePila)
+router.delete('/pilas/:name', PilaController.deletePila);
+
+// DELETE /audios/:slug (remove audio)
+router.delete('/audios/:slug', AudioController.deleteAudio);
 
 
 module.exports = router;

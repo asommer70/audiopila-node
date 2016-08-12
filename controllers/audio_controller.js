@@ -8,7 +8,7 @@ var hostname = require('os').hostname().split('.').shift();
 exports.audios = function(req, res, next) {
   Audio.all((audios) => {
     res.json(audios);
-  })
+  });
 }
 
 exports.audio = function(req, res, next) {
@@ -26,5 +26,19 @@ exports.audio = function(req, res, next) {
     var readStream = fs.createReadStream(audio.path);
     res.audio = audio;
     readStream.pipe(res);
+  });
+}
+
+exports.deleteAudio = function(req, res, next) {
+  Audio.delete(req.params.slug, (audios) => {
+    res.json(audios);
+  });
+}
+
+exports.addRepoAudios = function(req, res, next) {
+  var baseUrl = req.protocol + '://' + req.get('host');
+
+  Audio.add(req.body.name, req.body.path, baseUrl, (audios) => {
+    res.json({message: 'Successfully added audios.', audios: audios});
   })
 }
