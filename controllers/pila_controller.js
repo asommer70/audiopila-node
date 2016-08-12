@@ -11,6 +11,9 @@ exports.pilas = function(req, res, next) {
 
 exports.pila = function(req, res, next) {
   Pila.findByName(req.params.name, (pila) => {
+    if (!pila) {
+      return res.status(404).json({message: 'Pila not found...'});
+    }
     res.json(pila);
   })
 }

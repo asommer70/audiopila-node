@@ -5,6 +5,7 @@ var bodyParser = require('body-parser');
 var router = express.Router();
 
 var PilaController = require('./controllers/pila_controller');
+var AudioController = require('./controllers/audio_controller');
 var DataApi = require('./lib/data_api');
 
 router.use(bodyParser.urlencoded({ extended: false }));
@@ -22,27 +23,10 @@ router.get('/pilas', PilaController.pilas);
 router.get('/pilas/:name', PilaController.pila);
 
 // GET /audios (index of audios)
-router.get('/audios', function(req, res) {
-  DataApi.getAudios((audios) => {
-    res.json(audios);
-  })
-});
+router.get('/audios', AudioController.audios);
 
 // GET /audios/:slug (download Audio from repository)
-router.get('/audios/:slug', function(req, res) {
-  console.log('req.params.slug:', req.params.slug);
-  DataApi.findAudio(req.params.slug, (audio) => {
-    var stat = fs.statSync(audio.path);
-    res.writeHead(200, {
-        'Content-Type': 'audio/mpeg',
-        'Content-Length': stat.size
-    });
-
-    var readStream = fs.createReadStream(audio.path);
-    res.audio = audio;
-    readStream.pipe(res);
-  })
-});
+router.get('/audios/:slug', AudioController.audio);
 
 
 // POST /audios (add Audios in directory)

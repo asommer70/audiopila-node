@@ -19,10 +19,37 @@ var Pila = {
         callback(null);
       } else {
         var pila = db.makeObject(docs, 'name')
-        callback(pila);
+        callback(pila[name]);
       }
     })
-  }
+  },
+
+  addPila: function(pila, callback) {
+    pila.type = 'pila';
+    db.insert(pila, function (err, doc) {
+      db.find({type: 'pila'}, function (err, docs) {
+        var pilas = db.makeObject(docs, 'name');
+        callback(pilas);
+      });
+    });
+  },
+
+  deletePila: (name, callback) => {
+    this.findByName(name, (pilas) => {
+      if (pilas) {
+        db.remove({type: 'pila', name: pilas[name]}, (err, numRemoved) => {
+          if (err) {
+            console.log('deletePila err:', err);
+            callback({message: 'Unable to delete Pila...'});
+          } else {
+            this.all((pilas) => {
+              callback({message: 'Pila successfully deleted.', pilas: pilas});
+            })
+          }
+        })
+      }
+    })
+  },
 }
 
 module.exports = Pila;
