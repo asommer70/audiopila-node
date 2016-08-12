@@ -1,16 +1,25 @@
 var express = require('express');
 var fs = require('fs');
+var bodyParser = require('body-parser');
 
 var router = express.Router();
 
+var PilaController = require('./controllers/pila_controller');
 var DataApi = require('./lib/data_api');
 
+router.use(bodyParser.urlencoded({ extended: false }));
+router.use(bodyParser.json());
+var hostname = require('os').hostname().split('.').shift();
+
+
 // GET / (index of everything)
-router.get('/', function(req, res) {
-  DataApi.findAll((docs) => {
-    res.json(docs);
-  })
-});
+router.get('/', PilaController.pilas);
+
+// GET /pilas (index of pilas)
+router.get('/pilas', PilaController.pilas);
+
+// GET /pilas/:name (get individual pila)
+router.get('/pilas/:name', PilaController.pila);
 
 // GET /audios (index of audios)
 router.get('/audios', function(req, res) {
@@ -19,15 +28,9 @@ router.get('/audios', function(req, res) {
   })
 });
 
-// GET /pilas (index of pilas)
-router.get('/pilas', function(req, res) {
-  DataApi.getPilas((pilas) => {
-    res.json(pilas);
-  })
-});
-
 // GET /audios/:slug (download Audio from repository)
 router.get('/audios/:slug', function(req, res) {
+  console.log('req.params.slug:', req.params.slug);
   DataApi.findAudio(req.params.slug, (audio) => {
     var stat = fs.statSync(audio.path);
     res.writeHead(200, {
@@ -247,11 +250,7 @@ router.put('/audios/:slug', function(req, res) {
 
 
 // DELETE /pilas/:name (remove pila)
-router.delete('/pilas/:name', function(req, res) {
-  DataApi.deletePila(req.params.name, (data) => {
-    res.json(data);
-  })
-})
+router.delete('/pilas/:name', PilaController.deletePila)
 
 
 module.exports = router;
