@@ -1,5 +1,6 @@
 var express = require('express');
 var fs = require('fs');
+var busboy = require('connect-busboy');
 var bodyParser = require('body-parser');
 
 var router = express.Router();
@@ -12,6 +13,8 @@ var DataApi = require('./lib/data_api');
 router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
 var hostname = require('os').hostname().split('.').shift();
+
+router.use(busboy({ immediate: true }));
 
 
 // GET / (index of everything)
@@ -37,95 +40,10 @@ router.get('/repos', RepoController.repos);
 router.post('/audios', AudioController.addRepoAudios);
 
 // POST /sync (sync device and audio details)
-router.post('/sync',   PilaController.sync);
-  // console.log('syncing:', req.body.name);
-
-  // // Update the local pila entry with httpUrl, lastSynced, syncedFrom, and Audios?
-  // var me = {
-  //   name: hostname,
-  //   baseUrl: req.protocol + '://' + req.get('host'),
-  //   syncUrl: req.protocol + '://' + req.get('host') + req.originalUrl,
-  //   syncedFrom: req.body.name,
-  // }
-  //
-  // // Get Me
-  // DataApi.getPila(hostname, (pilas) => {
-  //   // console.log('pilas[0].audios:', pilas[0].audios);
-  //   // Object.assign(pilas[0], me);
-  //   for (var attrname in pilas[0]) { me[attrname] = pilas[0][attrname]; }
-  //   me.lastSynced = Date.now();
-  //
-  //   // Update Me
-  //   DataApi.updatePila(me, (pilas) => {
-  //     console.log('Updated me...');
-  //
-  //     DataApi.getPila(req.body.name, (pilas) => {
-  //       if (pilas == null) {
-  //         DataApi.addPila(req.body, (pilas) => {
-  //           // Update Audios
-  //           DataApi.updateAudiosSync(pilas[req.body.name].audios, pilas[me.name].audios, (audios) => {
-  //             me.audios = audios;
-  //
-  //             DataApi.updatePila(me, (pilas) => {
-  //               res.json({message: 'Sync successful.', pilas: pilas, pila: pilas[me.name]});
-  //             })
-  //           })
-  //         })
-  //       } else {
-  //         console.log('updating pilas...');
-  //
-  //         // Update synced Pila.
-  //         DataApi.updatePila(req.body, (pilas) => {
-  //           DataApi.updateAudiosSync(pilas[req.body.name].audios, pilas[me.name].audios, (audios) => {
-  //             me.audios = audios;
-  //
-  //             DataApi.updatePila(me, (pilas) => {
-  //               res.json({message: 'Sync successful.', pilas: pilas, pila: pilas[me.name]});
-  //             })
-  //           })
-  //         })
-  //       }
-  //     })
-  //   })
-  // });
-// });
+router.post('/sync', PilaController.sync);
 
 // POST /repos/:slug (upload Audios to repository)
-router.post('/repos/:slug', function(req, res) {
-  if (req.busboy) {
-    req.busboy.on('field', (key, value, keyTruncated, valueTruncated) => {
-
-      if (key == 'slug') {
-        req.busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
-          DataApi.getPila(hostname, (pilas) => {
-            if (pilas) {
-              var pila = pilas[0];
-              var repo = pila.repositories[value];
-
-              fstream = fs.createWriteStream(repo.path + '/' + filename);
-              file.pipe(fstream);
-              fstream.on('close', () => {
-                console.log(filename + ' uploaded to: ' + repo.path);
-
-                // Send a POST to /audios to updated the local repo's Audios list.
-                var options = {
-                  uri: req.protocol + '://' + req.get('host') + '/audios/',
-                  method: 'POST',
-                  json: repo
-                };
-                request(options, (error, response, body) => {});
-
-                res.json({message: 'Audio uploaded to: ' + repo.path, pila: pila});
-              });
-            } else {
-              res.json({message: 'Audio could not be uploaded.'});
-            }
-          })
-        });
-      }
-    });
-  }
-})
+router.post('/repos/:slug', PilaController.upload);
 
 
 // PUT /audios/:slug (play Audio)

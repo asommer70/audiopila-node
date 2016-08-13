@@ -1,5 +1,9 @@
+var fs = require('fs');
+var request = require('request');
+
 var DataApi = require('../lib/data_api');
 var Pila = require('../models/pila');
+var Audio = require('../models/audio');
 
 var hostname = require('os').hostname().split('.').shift();
 
@@ -73,4 +77,36 @@ exports.sync = function(req, res, next) {
       })
     })
   });
+}
+
+exports.upload = function(req, res, next) {
+  if (req.busboy) {
+    req.busboy.on('field', (key, value, keyTruncated, valueTruncated) => {
+      if (key == 'slug') {
+        req.busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+          Pila.findByName(hostname, (pila) => {
+            if (pila) {
+              var repo = pila.repositories[value];
+
+              fstream = fs.createWriteStream(repo.path + '/' + filename);
+              file.pipe(fstream);
+              fstream.on('close', () => {
+                console.log(filename + ' uploaded to: ' + repo.path)
+
+                // Update the Pila.audios list.
+                Audio.add(repo.name, repo.path, req.protocol + '://' + req.get('host'), (audios) => {
+                  res.json({message: 'Successfully added audios.', audios: audios});
+                })
+
+              });
+            } else {
+              res.json({message: 'Audio could not be uploaded.'});
+            }
+          })
+        });
+      }
+    });
+  } else {
+    res.json({message: 'Bad luck no busboy...'})
+  }
 }

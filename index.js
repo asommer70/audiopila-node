@@ -4,7 +4,7 @@ var bodyParser = require('body-parser');
 var Datastore = require('nedb');
 var os = require('os');
 var fs = require('fs');
-var busboy = require('connect-busboy');
+// var busboy = require('connect-busboy');
 var request = require('request');
 
 var DataApi = require('./lib/data_api');
@@ -18,7 +18,7 @@ var app = express();
 app.use(routes);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(busboy({ immediate: true }));
+// app.use(busboy({ immediate: true }));
 
 
 // Send Errors in JSON.
