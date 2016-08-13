@@ -101,22 +101,6 @@ var Audio = {
           audio.duration = probeData.format.duration;
           audio.type = 'audio';
           audio.httpUrl = baseUrl + '/audios/' + audio.slug;
-
-          //
-          // // If audio is not in the database add it.
-          // db.find({slug: audio.slug}, function(err, docs) {
-          //   if (err) {
-          //     console.log('find Audio error:', err);
-          //   }
-          //
-          //   if (docs.length == 0) {
-          //     db.insert(audio, (err, doc) => {
-          //       if (err) {
-          //         console.log('insert audio err:', err);
-          //       }
-          //     });
-          //   }
-          // })
           callback(audio);
         }
       });

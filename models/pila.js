@@ -3,7 +3,6 @@ var db = require('./db');
 var Pila = {
   all: function(callback) {
     db.find({type: 'pila'}, (error, docs) => {
-      console.log('db.find docs:', docs);
       if (error) {
         console.log('getPilas error:', error);
       }
@@ -46,6 +45,24 @@ var Pila = {
     })
   },
 
+  updateLocalAudios: function(remoteAudios, localAudios, callback) {
+    for (var key in remoteAudios) {
+      var remoteAudio = remoteAudios[key];
+      var localAudio = localAudios[key];
+
+      if (localAudio != undefined) {
+        if (localAudio.playedTime != undefined) {
+          if (remoteAudio.playedTime > localAudio.playedTime) {
+            localAudios[key].playbackTime = remoteAudio.playbackTime;
+          }
+        } else {
+          localAudios[key].playbackTime = remoteAudio.playbackTime;
+        }
+      }
+    }
+    callback(localAudios);
+  },
+
   deletePila: (name, callback) => {
     this.findByName(name, (pilas) => {
       if (pilas) {
@@ -55,7 +72,7 @@ var Pila = {
             callback({message: 'Unable to delete Pila...'});
           } else {
             this.all((pilas) => {
-              callback({message: 'Pila successfully deleted.', pilas: pilas});
+              callback(pilas);
             })
           }
         })
