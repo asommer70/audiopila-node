@@ -45,6 +45,11 @@ var Audio = {
           var ext = file.substr(file.length - 4);
           if (/\.mp3|\.m4a|\.mp4|\.ogg|\.mkv|\.wav/g.exec(ext) !== null) {
             return file;
+          } else if (fs.lstatSync(path + '/' + file).isDirectory()) {
+            // Add audio files in subdirectories.
+            this.add(name, path + '/' + file, baseUrl, (audios) => {
+              console.log('audios:', audios);
+            })
           }
         })
 

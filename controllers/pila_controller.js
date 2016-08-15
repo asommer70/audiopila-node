@@ -25,13 +25,11 @@ exports.pila = function(req, res, next) {
 exports.status = function(req, res, next) {
   Pila.findByName(hostname, (pila) => {
     var player = {
-      duration: Player.duration,
       state: Player.state || 'stopped',
     }
-    if (player.audio !== undefined) {
-      player.audio =  Player.audio.slug;
-      player.playbackTime = Player.audio.playbackTime;
-      player.playedTime =  Player.audio.playedTime;
+    if (Player.audio !== undefined) {
+      player.audio = Player.audio;
+      player.state = Player.state;
     } else {
       var sortable = [];
       for (var slug in pila.audios) {
@@ -46,7 +44,6 @@ exports.status = function(req, res, next) {
         }
       })
 
-      // console.log('sortable:', sortable[0]);
       player.audio = sortable[0];
     }
 
