@@ -1,6 +1,5 @@
 var fs = require('fs');
 
-var DataApi = require('../lib/data_api');
 var Repo = require('../models/repo');
 
 var hostname = require('os').hostname().split('.').shift();

@@ -1,24 +1,16 @@
 var express = require('express');
 var routes = require('./routes');
 var bodyParser = require('body-parser');
-var Datastore = require('nedb');
 var os = require('os');
-var fs = require('fs');
-// var busboy = require('connect-busboy');
-var request = require('request');
 
-var DataApi = require('./lib/data_api');
-var PlayerApi = require('./lib/player_api');
+var Pila = require('./models/pila');
 
-var hostname = require('os').hostname().split('.').shift();
-// var player = new Player();
-var player = {};
+var hostname = os.hostname().split('.').shift();
 
 var app = express();
 app.use(routes);
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-// app.use(busboy({ immediate: true }));
+// app.use(bodyParser.urlencoded({ extended: false }));
+// app.use(bodyParser.json());
 
 
 // Send Errors in JSON.
@@ -39,7 +31,7 @@ app.listen(port, '0.0.0.0', () => {
     type: 'pila',
   }
 
-  DataApi.getPila(hostname, function(pilas) {
+  Pila.findByName(hostname, function(pilas) {
     if (pilas == null) {
       DataApi.addPila(me, function(pilas) {
         console.log('Added local Pila...');

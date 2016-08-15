@@ -1,7 +1,6 @@
 var fs = require('fs');
 var request = require('request');
 
-var DataApi = require('../lib/data_api');
 var Pila = require('../models/pila');
 var Audio = require('../models/audio');
 
