@@ -3,6 +3,7 @@ var request = require('request');
 
 var Pila = require('../models/pila');
 var Audio = require('../models/audio');
+var Player = require('../models/player');
 
 var hostname = require('os').hostname().split('.').shift();
 
@@ -18,6 +19,38 @@ exports.pila = function(req, res, next) {
       return res.status(404).json({message: 'Pila not found...'});
     }
     res.json(pila);
+  })
+}
+
+exports.status = function(req, res, next) {
+  Pila.findByName(hostname, (pila) => {
+    var player = {
+      duration: Player.duration,
+      state: Player.state || 'stopped',
+    }
+    if (player.audio !== undefined) {
+      player.audio =  Player.audio.slug;
+      player.playbackTime = Player.audio.playbackTime;
+      player.playedTime =  Player.audio.playedTime;
+    } else {
+      var sortable = [];
+      for (var slug in pila.audios) {
+        sortable.push(pila.audios[slug])
+      }
+
+      sortable.sort(function(a, b) {
+        if (a.playedTime !== undefined && b.playedTime !== undefined) {
+          return b.playedTime - a.playedTime;
+        } else {
+          return -1
+        }
+      })
+
+      // console.log('sortable:', sortable[0]);
+      player.audio = sortable[0];
+    }
+
+    res.json({player: player, pila: pila});
   })
 }
 

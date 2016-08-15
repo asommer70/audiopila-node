@@ -34,6 +34,9 @@ router.get('/audios/:slug', AudioController.audio);
 // GET /repos (index of repositories)
 router.get('/repos', RepoController.repos);
 
+// GET /stats (data about this Pila)
+router.get('/status', PilaController.status);
+
 
 // POST /audios (add Audios in directory)
 router.post('/audios', AudioController.addRepoAudios);
