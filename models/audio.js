@@ -85,6 +85,15 @@ var Audio = {
       });
   },
 
+  update: function(audio, callback) {
+    Pila.findByName(hostname, (pila) => {
+      pila.audios[audio.slug] = audio;
+      Pila.updatePila(pila, (pila) => {
+        callback({message: 'Updated audio: ' + audio.slug, audio: audio});
+      })
+    })
+  },
+
   getAudioDetails: function(file, path, repository, baseUrl, callback) {
       var audio = {};
       audio.slug = file.slice(0, file.length - 4).replace(/\s/g, '_').replace(/\./g, '_').toLowerCase();

@@ -1,9 +1,9 @@
 var fs = require('fs');
 
-var DataApi = require('../lib/data_api');
 var Audio = require('../models/audio');
-
+var Player = require('../models/player');
 var hostname = require('os').hostname().split('.').shift();
+
 
 exports.audios = function(req, res, next) {
   Audio.all((audios) => {
@@ -41,4 +41,36 @@ exports.addRepoAudios = function(req, res, next) {
   Audio.add(req.body.name, req.body.path, baseUrl, (audios) => {
     res.json({message: 'Successfully added audios.', audios: audios});
   })
+}
+
+exports.action = function(req, res, next) {
+  console.log('audio_controller action:', req.body.action);
+  switch (req.body.action) {
+    case 'play':
+    console.log('playing...');
+      Player.play(req.params.slug, (data) => {
+        res.json(data);
+      })
+      break;
+
+    case 'pause':
+      console.log('pausing...');
+      Player.pause(req.params.slug, (data) => {
+        res.json(data);
+      })
+      break;
+
+    case 'forward':
+      console.log('going forward...');
+      Player.seek(req.params.slug, 'forward', (data) => {
+        res.json(data);
+      })
+      break;
+    case 'backward':
+      console.log('going backward...');
+      Player.seek(req.params.slug, 'backward', (data) => {
+        res.json(data);
+      })
+      break;
+  }
 }
