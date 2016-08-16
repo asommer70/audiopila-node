@@ -33,7 +33,7 @@ app.listen(port, '0.0.0.0', () => {
 
   Pila.findByName(hostname, function(pilas) {
     if (pilas == null) {
-      DataApi.addPila(me, function(pilas) {
+      Pila.addPila(me, function(pilas) {
         console.log('Added local Pila...');
       });
     }
