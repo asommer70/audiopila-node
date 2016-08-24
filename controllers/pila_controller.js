@@ -1,8 +1,8 @@
 var fs = require('fs');
 var request = require('request');
 
-var Pila = require('../models/pila');
-var Audio = require('../models/audio');
+var Pila = require('../models').pila;
+var Audio = require('../models').audio;
 var Player = require('../models/player');
 
 var hostname = require('os').hostname().split('.').shift();

@@ -4,7 +4,7 @@ var bodyParser = require('body-parser');
 var os = require('os');
 var config = require('./config');
 
-var Pila = require('./models/pila');
+var Pila = require('./models').pila;
 
 var hostname = os.hostname().split('.').shift();
 

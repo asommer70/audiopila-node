@@ -1,6 +1,6 @@
 var fs = require('fs');
 
-var Repo = require('../models/repo');
+var Repo = require('../models').repo;
 
 var hostname = require('os').hostname().split('.').shift();
 

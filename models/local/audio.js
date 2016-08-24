@@ -2,7 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var probe = require('node-ffprobe');
 
-var db = require('./store');
+var db = require('./index').db;
 var Pila = require('./pila');
 
 var hostname = require('os').hostname().split('.').shift();
@@ -127,16 +127,6 @@ var Audio = {
             callback(audio);
           }
         });
-  },
-
-  oldgetLocalFiles: function(path, callback) {
-    fs.readdir(path, (error, files) => {
-      if (error) {
-        console.log('readir error:', error);
-      } else {
-        callback(files);
-      }
-    });
   },
 
   getLocalFiles: function(dir, done) {

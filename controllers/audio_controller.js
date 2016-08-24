@@ -1,6 +1,6 @@
 var fs = require('fs');
 
-var Audio = require('../models/audio');
+var Audio = require('../models').audio;
 var Player = require('../models/player');
 var hostname = require('os').hostname().split('.').shift();
 

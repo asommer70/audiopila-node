@@ -1,7 +1,7 @@
 var Datastore = require('nedb');
-var dbConfig = require('../../config/db');
+var config = require('../../config/db')['local'];
 
-var db = new Datastore({ filename: dbConfig.path, autoload: true });
+var db = new Datastore({ filename: config.path, autoload: true });
 
 db.ensureIndex({ fieldName: 'name' }, function (err) {
   if (err) {

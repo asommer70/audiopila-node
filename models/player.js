@@ -4,7 +4,7 @@ const EventEmitter = require('events');
 const fs = require('fs');
 var probe = require('node-ffprobe');
 
-var Audio = require('./audio');
+var Audio = require('./index').audio;
 
 var Player = {
   child: undefined,
