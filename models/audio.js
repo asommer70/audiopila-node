@@ -1,9 +1,8 @@
 var fs = require('fs');
 var path = require('path');
 var probe = require('node-ffprobe');
-var Worker = require('webworker-threads').Worker;
 
-var db = require('./db');
+var db = require('./store');
 var Pila = require('./pila');
 
 var hostname = require('os').hostname().split('.').shift();
@@ -39,103 +38,51 @@ var Audio = {
   },
 
   add: function(name, path, baseUrl, callback) {
-      //this.getLocalFiles(path, (files) => {
+    var repository = {name: name, path: path};
+    repository.slug = name.replace(/\s/g, '_').replace(/\./g, '_').toLowerCase();
 
-      //  var audioFiles = files.filter((file) => {
-      //    var ext = file.substr(file.length - 4);
-      //    if (/\.mp3|\.m4a|\.mp4|\.ogg|\.mkv|\.wav/g.exec(ext) !== null) {
-      //      return file;
-      //    } 
-      //  })
+    this.getLocalFiles(path, (err, files) => {
+      if (err) throw err;
 
-      //  for (var i = 0; files.length; i++) {
-      //    var file = files[i];
-      //    if (file !== undefined) {
-      //      if (fs.lstatSync(path + '/' + file).isDirectory()) {
-      //        // Add audio files in subdirectories.
-      //        console.log('name:', name, 'path:', path + '/' + file);
-      //        this.getLocalFiles(path + '/' + file, (files) => {
-      //          var subAudioFiles = files.filter((file) => {
-      //            var ext = file.substr(file.length - 4);
-      //            if (/\.mp3|\.m4a|\.mp4|\.ogg|\.mkv|\.wav/g.exec(ext) !== null) {
-      //              return file;
-      //            } 
-      //          })
-      //          audioFiles.concat(subAudioFiles);
-      //        })
-      //        //this.add(name, path + '/' + file, baseUrl, (audios) => {
-      //        //  console.log('audios:', audios);
-      //        //})
-      //      }
-      //    }
-      //  }
+      Pila.findByName(hostname, (pila) => {
+        // If no repositories create empty object.
+        if (!pila.repositories) {
+          pila.repositories = {};
+        }
 
-        //console.log('audioFiles.length:', audioFiles.length);
-        
-      var repository = {name: name, path: path};
-      repository.slug = name.replace(/\s/g, '_').replace(/\./g, '_').toLowerCase();
-        
-      this.getLocalFiles(path, (err, files) => {
-        if (err) throw err;
+        // If repository isn't in the repositories add it.
+        if (pila.repositories[repository.slug] == undefined) {
+          pila.repositories[repository.slug] = repository;
+        }
 
-          Pila.findByName(hostname, (pila) => {
-            // If no repositories create empty object.
-            if (!pila.repositories) {
-              pila.repositories = {};
-            }
+        if (files.length == 0) {
+          pila.audios = {};
+        } else {
+          console.log('files.length:', files.length);
+          var i, j, tempFiles, chunk = 200;
+          for (i=0, j = files.length; i < j; i += chunk) {
+            tempFiles = files.slice(i, i + chunk);
+            //console.log(tempFiles);
 
-            // If repository isn't in the repositories add it.
-            if (pila.repositories[repository.slug] == undefined) {
-              pila.repositories[repository.slug] = repository;
-            }
-
-            if (files.length == 0) {
-              pila.audios = {};
-            } else {
-              console.log('files.length:', files.length);
-              var i, j, tempFiles, chunk = 200;
-              for (i=0, j = files.length; i < j; i += chunk) {
-                tempFiles = files.slice(i, i + chunk);
-                //console.log(tempFiles);
-
-          // Use a counter to execute the res.json.
-          var counter = 0;
-          var worker = new Worker(() => {
-              tempFiles.forEach((file) => {
-                this.getAudioDetails(file, repository, baseUrl, (audio) => {
-                  console.log('audio.slug:', audio.slug);
-                  pila.audios[audio.slug] = audio;
-                  counter++;
-                  if (counter == tempFilesfiles.length) {
-                    Pila.updatePila(pila, (pila) => {
-                      console.log('Updated me with ' + tempFiles.length + ' audios...');
-                    })
-                    //callback(pila.audios);
-                    this.close();
-                  }
-                });
-              })
-          });
-              }
-
-              //files.forEach((file) => {
-                //this.getAudioDetails(file, repository, baseUrl, (audio) => {
-                //  pila.audios[audio.slug] = audio;
-                //  counter++;
-                //  if (counter == files.length) {
-                //    Pila.updatePila(pila, (pila) => {
-                //      console.log('Updated me with ' + files.length + ' audios...');
-                //    })
-                //    callback(pila.audios);
-                //  }
-                //});
-              //})
-            }
-          });
+            // Use a counter to execute the res.json.
+            var counter = 0;
+            tempFiles.forEach((file) => {
+              this.getAudioDetails(file, repository, baseUrl, (audio) => {
+                console.log('audio.slug:', audio.slug);
+                pila.audios[audio.slug] = audio;
+                counter++;
+                if (counter == tempFiles.length) {
+                  Pila.updatePila(pila, (pila) => {
+                    console.log('Updated me with ' + tempFiles.length + ' audios...');
+                  })
+                  callback(pila.audios);
+                }
+              });
+            })
+          }
+        }
       });
-
-
-      //});
+    });
   },
 
   update: function(audio, callback) {
@@ -156,7 +103,7 @@ var Audio = {
 
       audio.repository = repository;
       audio.playbackTime = 0;
-      
+
         console.log('probing file:', file);
         probe(file, function(err, probeData) {
           if (err) {
@@ -196,19 +143,19 @@ var Audio = {
     var results = [];
     fs.readdir(dir, (err, list) => {
       if (err) return done(err);
-  
+
       var pending = list.length;
       if (!pending) return done(null, results);
-  
+
       list.forEach((file) => {
         file = path.resolve(dir, file);
-  
+
         fs.stat(file, (err, stat) => {
           if (stat && stat.isDirectory()) {
             this.getLocalFiles(file, (err, res) => {
-  
+
               results = results.concat(res);
-  
+
               if (!--pending) done(null, results);
             });
           } else {

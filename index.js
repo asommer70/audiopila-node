@@ -2,6 +2,7 @@ var express = require('express');
 var routes = require('./routes');
 var bodyParser = require('body-parser');
 var os = require('os');
+var config = require('./config');
 
 var Pila = require('./models/pila');
 
@@ -20,9 +21,7 @@ app.use(function(err, req, res, next) {
   res.status(500).send({status:500, message: 'internal error', type:'internal'});
 })
 
-var port = process.env.PORT || 3000;
-
-app.listen(port, '0.0.0.0', () => {
+app.listen(config.port, config.ip, () => {
   // Add pilas entry for this device if it's not there.
   var me = {
     name: hostname,
@@ -39,5 +38,5 @@ app.listen(port, '0.0.0.0', () => {
     }
   })
 
-  console.log('Audio Pila! listening on port 3000!');
+  console.log('Audio Pila! listening on port: ' + config.port);
 });

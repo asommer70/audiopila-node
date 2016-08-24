@@ -1,4 +1,4 @@
-var db = require('./db');
+var db = require('./store');
 
 var Pila = {
   all: function(callback) {

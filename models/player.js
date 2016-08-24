@@ -29,7 +29,7 @@ var Player = {
       if (this.audio == undefined) {
         // Find Audio and play it.
         Audio.findBySlug(slug, (audio) => {
-          console.log('Playing:', audio.slug, audio.path);
+          console.log('Playing:', audio);
           this.playChild(audio);
           this.state = 'playing';
 

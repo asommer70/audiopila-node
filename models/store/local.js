@@ -1,7 +1,7 @@
-var fs = require('fs');
 var Datastore = require('nedb');
+var dbConfig = require('../../config/db');
 
-var db = new Datastore({ filename: './db/audiopila.db', autoload: true });
+var db = new Datastore({ filename: dbConfig.path, autoload: true });
 
 db.ensureIndex({ fieldName: 'name' }, function (err) {
   if (err) {

@@ -1,5 +1,4 @@
 var fs = require('fs');
-var db = require('./db');
 var Pila = require('./pila');
 var hostname = require('os').hostname().split('.').shift();
 
