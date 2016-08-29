@@ -28,12 +28,10 @@ app.listen(config.port, config.ip, () => {
     type: 'pila',
   }
 
-  console.log('Pila:', Pila);
-
   Pila.findByName(hostname)
     .then((pila) => {
       if (pila == null) {
-        Pila.addPila(me, function(pila) {
+        Pila.addPila(me, function(pilas) {
           console.log('Added local Pila...');
         });
       }

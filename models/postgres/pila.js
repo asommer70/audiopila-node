@@ -1,6 +1,6 @@
 'use strict';
 module.exports = function(sequelize, DataTypes) {
-  var Pila = sequelize.define('Pila', {
+  var Pila = sequelize.define('pila', {
     name: {type: DataTypes.STRING, notNull: true, unique: true},
     platform: DataTypes.STRING,
     lastSynced: DataTypes.INTEGER,
@@ -14,6 +14,14 @@ module.exports = function(sequelize, DataTypes) {
 
       findByName: function(name) {
         return this.findOne({ where: {name: name} });
+      },
+
+      addPila: function(pila) {
+        return this.create(pila);
+      },
+
+      all: function() {
+        return this.findAll();
       }
     },
   });
