@@ -2,10 +2,12 @@ var config = require('../config');
 
 var store = {};
 switch (config.db) {
-  case 'postgresql':
+  case 'postgres':
     console.log('store dialect is PosgreSQL...');
-    store = require('./postgresql');
-    store.repo = require('./local').repo;
+    store.db = require('./postgres');
+    store.pila = require('./postgres').pila;
+    store.audio = require('./postgres').audio;
+    store.repo = require('./postgres').repo;
     break;
   default:
     console.log('store dialect is local nedb...');

@@ -7,13 +7,13 @@ module.exports = function(sequelize, DataTypes) {
     syncedTo: DataTypes.STRING,
     lastPlayed: DataTypes.INTEGER
   }, {
-
-    getterMethods: {
-    },
-
     classMethods: {
       associate: function(models) {
         // associations can be defined here
+      },
+
+      findByName: function(name) {
+        return this.findOne({ where: {name: name} });
       }
     },
   });

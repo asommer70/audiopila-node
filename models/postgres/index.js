@@ -1,4 +1,4 @@
-exports.db = require('./db');
-// exports.pila = require('./pila');
-// exports.audio = require('./audio');
-exports.repo = require('./repo');
+var db = require('./db');
+exports.pila = db.Pila;
+exports.audio = db.Audio;
+exports.repo = db.Repo;

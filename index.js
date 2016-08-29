@@ -10,8 +10,6 @@ var hostname = os.hostname().split('.').shift();
 
 var app = express();
 app.use(routes);
-// app.use(bodyParser.urlencoded({ extended: false }));
-// app.use(bodyParser.json());
 
 
 // Send Errors in JSON.
@@ -30,13 +28,16 @@ app.listen(config.port, config.ip, () => {
     type: 'pila',
   }
 
-  Pila.findByName(hostname, function(pilas) {
-    if (pilas == null) {
-      Pila.addPila(me, function(pilas) {
-        console.log('Added local Pila...');
-      });
-    }
-  })
+  console.log('Pila:', Pila);
+
+  Pila.findByName(hostname)
+    .then((pila) => {
+      if (pila == null) {
+        Pila.addPila(me, function(pila) {
+          console.log('Added local Pila...');
+        });
+      }
+    });
 
   console.log('Audio Pila! listening on port: ' + config.port);
 });
