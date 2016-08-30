@@ -1,6 +1,7 @@
 'use strict';
+
 module.exports = function(sequelize, DataTypes) {
-  var Audio = sequelize.define('Audio', {
+  var Audio = sequelize.define('audio', {
     name: {type: DataTypes.STRING, notNull: true},
     path: DataTypes.STRING,
     httpUrl: DataTypes.STRING,
@@ -18,7 +19,20 @@ module.exports = function(sequelize, DataTypes) {
     classMethods: {
       associate: function(models) {
         // associations can be defined here
-      }
+      },
+
+      findBySlug: function(slug) {
+        return this.findOne({ where: {slug: slug} });
+      },
+
+      //
+      // add: function(name, path, baseUrl) {
+      //   this.create
+      // },
+
+      all: function() {
+        return this.findAll({plain: true});
+      },
     },
   });
   return Audio;

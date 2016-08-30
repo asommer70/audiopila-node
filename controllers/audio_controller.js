@@ -2,13 +2,15 @@ var fs = require('fs');
 
 var Audio = require('../models').audio;
 var Player = require('../models/player');
+var AudioFile = require('../lib/audio_file');
+
 var hostname = require('os').hostname().split('.').shift();
 
-
 exports.audios = function(req, res, next) {
-  Audio.all((audios) => {
-    res.json(audios);
-  });
+  Audio.all()
+    .then((audios) => {
+      res.json(audios || {});
+    })
 }
 
 exports.audio = function(req, res, next) {
@@ -38,9 +40,20 @@ exports.deleteAudio = function(req, res, next) {
 exports.addRepoAudios = function(req, res, next) {
   var baseUrl = req.protocol + '://' + req.get('host');
 
-  Audio.add(req.body.name, req.body.path, baseUrl, (audios) => {
-    res.json({message: 'Successfully added audios.', audios: audios});
-  })
+  AudioFile.add(req.body.name, req.body.path, baseUrl)
+    .then((audios) => {
+      res.json(audios);
+    });
+
+  //
+  // try {
+  //   Audio.add(req.body.name, req.body.path, baseUrl)
+  //     .then((audios) => {
+  //       res.json({message: 'Successfully added audios.', audios: audios});
+  //     })
+  // } catch (e) {
+  //   console.log('e:', e);
+  // }
 }
 
 exports.action = function(req, res, next) {

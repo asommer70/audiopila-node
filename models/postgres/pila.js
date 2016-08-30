@@ -13,6 +13,7 @@ module.exports = function(sequelize, DataTypes) {
       },
 
       findByName: function(name) {
+        console.log('name:', name);
         return this.findOne({ where: {name: name} });
       },
 
@@ -21,8 +22,8 @@ module.exports = function(sequelize, DataTypes) {
       },
 
       all: function() {
-        return this.findAll();
-      }
+        return this.findAll({plain: true});
+      },
     },
   });
   return Pila;

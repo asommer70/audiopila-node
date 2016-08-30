@@ -8,11 +8,6 @@ var Player = require('../models/player');
 var hostname = require('os').hostname().split('.').shift();
 
 exports.pilas = function(req, res, next) {
-  // Pila.all((pilas) => {
-  //   res.json(pilas);
-  // })
-  // var a = Pila.all()
-  // console.log('a:', a);
   Pila.all()
     .then((pilas) => {
       res.json(pilas);
