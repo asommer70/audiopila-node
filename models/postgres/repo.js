@@ -1,8 +1,19 @@
 'use strict';
+var Pila = require('./pila');
+
 module.exports = function(sequelize, DataTypes) {
   var Repo = sequelize.define('repo', {
     name: {type: DataTypes.STRING, notNull: true, unique: true},
     path: DataTypes.STRING,
+    pila_id:  {
+      type: DataTypes.INTEGER,
+      references: {
+        model: Pila,
+        key: 'id',
+      },
+      onUpdate: 'cascade',
+      onDelete: 'cascade'
+   }
   }, {
 
     getterMethods: {

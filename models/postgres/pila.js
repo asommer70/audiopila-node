@@ -26,5 +26,8 @@ module.exports = function(sequelize, DataTypes) {
       },
     },
   });
+
+  Pila.hasMany(Repo, {as: 'repositories'})
+
   return Pila;
 };

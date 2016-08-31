@@ -2,7 +2,7 @@ var db = require('./index').db;
 
 var Pila = {
   all: function() {
-    return new Promise(function (fulfill, reject) {
+    return new Promise(function (resolve, reject) {
       db.find({type: 'pila'}, (error, docs) => {
         if (error) {
           console.log('getPilas error:', error);
@@ -10,19 +10,19 @@ var Pila = {
         }
 
         var pilas = db.makeObject(docs, 'name')
-        fulfill(pilas);
+        resolve(pilas);
       })
     });
   },
 
   findByName: function(name) {
-    return new Promise(function (fulfill, reject) {
+    return new Promise(function (resolve, reject) {
       db.find({name: name, type: 'pila'}, function(error, docs) {
         if (docs.length == 0) {
           callback(null);
         } else {
           var pila = db.makeObject(docs, 'name')
-          fulfill(pila[name]);
+          resolve(pila[name]);
         }
       })
     });
