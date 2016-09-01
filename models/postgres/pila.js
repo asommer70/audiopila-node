@@ -1,33 +1,27 @@
-'use strict';
-module.exports = function(sequelize, DataTypes) {
-  var Pila = sequelize.define('pila', {
-    name: {type: DataTypes.STRING, notNull: true, unique: true},
-    platform: DataTypes.STRING,
-    lastSynced: DataTypes.INTEGER,
-    syncedTo: DataTypes.STRING,
-    lastPlayed: DataTypes.INTEGER
-  }, {
-    classMethods: {
-      associate: function(models) {
-        // associations can be defined here
-      },
+var bookshelf = require('./db');
+var Repo = require('./repo');
+var Audio = require('./audio');
 
-      findByName: function(name) {
-        console.log('name:', name);
-        return this.findOne({ where: {name: name} });
-      },
+var Pila = bookshelf.Model.extend({
+  tableName: 'pilas',
+  repos: function() {
+    return this.hasMany('Repo');
+  },
+  audios: function() {
+    return this.hasMany('Audio');
+  },
+  hasTimestamps: true
+}, {
+  findByName: function(name) {
+    return this.where('name', name).fetch({withRelated: ['audios', 'repos']});
+  },
+  addPila: function(pila) {
+    console.log('pila:', pila);
+    return new Pila(pila).save();
+  },
+  all: function() {
+    return this.fetchAll();
+  }
+});
 
-      addPila: function(pila) {
-        return this.create(pila);
-      },
-
-      all: function() {
-        return this.findAll({plain: true});
-      },
-    },
-  });
-
-  Pila.hasMany(Repo, {as: 'repositories'})
-
-  return Pila;
-};
+module.exports = bookshelf.model('Pila', Pila);

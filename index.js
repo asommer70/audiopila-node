@@ -24,9 +24,10 @@ app.listen(config.port, config.ip, () => {
   var me = {
     name: hostname,
     platform: os.platform(),
-    audios: {},
     type: 'pila',
   }
+
+  console.log('Pila:', Pila);
 
   Pila.findByName(hostname)
     .then((pila) => {
