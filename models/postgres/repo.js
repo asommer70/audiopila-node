@@ -8,6 +8,14 @@ var Repo = bookshelf.Model.extend({
     return this.belongsTo('Pila');
   },
   hasTimestamps: true
+}, {
+  all: function() {
+    return this.fetchAll()
+      .then((repos) => {
+        return this.makeObject(repos, 'name');
+      });
+  },
+  makeObject: ModelHelpers.makeObject
 });
 
 module.exports = bookshelf.model('Repo', Repo);;
