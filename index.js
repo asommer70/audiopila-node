@@ -26,9 +26,7 @@ app.listen(config.port, config.ip, () => {
     platform: os.platform(),
     type: 'pila',
   }
-
-  console.log('Pila:', Pila);
-
+  
   Pila.findByName(hostname)
     .then((pila) => {
       if (pila == null) {

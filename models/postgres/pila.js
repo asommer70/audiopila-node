@@ -1,6 +1,7 @@
 var bookshelf = require('./db');
 var Repo = require('./repo');
 var Audio = require('./audio');
+var ModelHelpers = require('../../lib/model_helpers');
 
 var Pila = bookshelf.Model.extend({
   tableName: 'pilas',
@@ -20,8 +21,12 @@ var Pila = bookshelf.Model.extend({
     return new Pila(pila).save();
   },
   all: function() {
-    return this.fetchAll();
-  }
+    return this.fetchAll()
+      .then((pilas) => {
+        return this.makeObject(pilas, 'name');
+      });
+  },
+  makeObject: ModelHelpers.makeObject
 });
 
 module.exports = bookshelf.model('Pila', Pila);

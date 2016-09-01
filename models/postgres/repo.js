@@ -1,5 +1,6 @@
 var bookshelf = require('./db');
 var Pila = require('./pila');
+var ModelHelpers = require('../../lib/model_helpers');
 
 var Repo = bookshelf.Model.extend({
   tableName: 'repos',
