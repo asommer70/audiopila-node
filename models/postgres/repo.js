@@ -18,4 +18,4 @@ var Repo = bookshelf.Model.extend({
   makeObject: ModelHelpers.makeObject
 });
 
-module.exports = bookshelf.model('Repo', Repo);;
+module.exports = bookshelf.model('Repo', Repo);
