@@ -22,10 +22,13 @@ var Audio = bookshelf.Model.extend({
   findBySlug: function(slug) {
     return this.where('slug', slug).fetch({withRelated: ['pila', 'repo']});
   },
-  // add: function(audio) {
-  //   console.log('audio:', audio);
-  //   return new Audio(audio).save();
-  // },
+  delete: function(slug) {
+    return this.where('slug', slug).fetch({withRelated: ['pila', 'repo']})
+      .then((audio) => {
+        audio.destroy();
+        return audio;
+      })
+  },
   makeObject: ModelHelpers.makeObject
 });
 

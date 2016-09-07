@@ -14,27 +14,30 @@ exports.audios = function(req, res, next) {
 }
 
 exports.audio = function(req, res, next) {
-  Audio.findBySlug(req.params.slug, (audio) => {
-    if (!audio) {
-      return res.status(404).json({message: 'Audio not found...'});
-    }
+  Audio.findBySlug(req.params.slug)
+    .then((audio) => {
+      if (!audio) {
+        return res.status(404).json({message: 'Audio not found...'});
+      }
 
-    var stat = fs.statSync(audio.path);
-    res.writeHead(200, {
-        'Content-Type': 'audio/mpeg',
-        'Content-Length': stat.size
+      var stat = fs.statSync(audio.get('path'));
+      res.writeHead(200, {
+          'Content-Type': 'audio/mpeg',
+          'Content-Length': stat.size
+      });
+
+      var readStream = fs.createReadStream(audio.get('path'));
+      res.audio = audio;
+      readStream.pipe(res);
     });
-
-    var readStream = fs.createReadStream(audio.path);
-    res.audio = audio;
-    readStream.pipe(res);
-  });
 }
 
 exports.deleteAudio = function(req, res, next) {
-  Audio.delete(req.params.slug, (audios) => {
-    res.json(audios);
-  });
+  Audio.delete(req.params.slug)
+    .then((audio) => {
+      console.log(audio.get('name') + ' was deleted...');
+      res.redirect('/audios');
+    })
 }
 
 exports.addRepoAudios = function(req, res, next) {
@@ -44,16 +47,6 @@ exports.addRepoAudios = function(req, res, next) {
     .then((audios) => {
       res.json(audios);
     });
-
-  //
-  // try {
-  //   Audio.add(req.body.name, req.body.path, baseUrl)
-  //     .then((audios) => {
-  //       res.json({message: 'Successfully added audios.', audios: audios});
-  //     })
-  // } catch (e) {
-  //   console.log('e:', e);
-  // }
 }
 
 exports.action = function(req, res, next) {

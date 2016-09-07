@@ -28,13 +28,14 @@ var Player = {
     } else {
       if (this.audio == undefined) {
         // Find Audio and play it.
-        Audio.findBySlug(slug, (audio) => {
-          console.log('Playing:', audio);
-          this.playChild(audio);
-          this.state = 'playing';
+        Audio.findBySlug(slug)
+          .then((audio) => {
+            console.log('Playing:', audio.get('name'));
+            this.playChild(audio);
+            this.state = 'playing';
 
-          callback({message: 'playing', audio: this.audio});
-        });
+            callback({message: 'playing', audio: this.audio});
+          });
       } else {
         // Play new Audio.
         if (this.audio.slug != slug) {
@@ -61,16 +62,20 @@ var Player = {
     if (this.child) {
       this.child.kill();
 
-      this.audio.playbackTime = this.duration;
+      this.audio.set('playbackTime', this.duration);
       this.state = 'paused';
 
       if (this.hasOwnProperty('audio')) {
-        this.audio.playedTime = Date.now();
+        this.audio.set('playedTime', Date.now());
       }
 
-      Audio.update(this.audio, (data) => {
-        callback({message: data.message, duration: data.audio.duration, audio: data.audio})
-      })
+      // Audio.update(this.audio, (data) => {
+      //   callback({message: data.message, duration: data.audio.duration, audio: data.audio})
+      // })
+      this.audio.save()
+        .then((audio) => {
+          callback({message: 'Updated audio: ' + audio.get('slug'), duration: this.duration, audio: audio})
+        })
     } else {
       callback({message: 'nothing', audio: {}})
     }
@@ -122,7 +127,7 @@ var Player = {
   playChild: function(audio) {
     this.audio = audio;
 
-    this.child = spawn('play', [audio.path, 'trim', audio.playbackTime]);
+    this.child = spawn('play', [audio.get('path'), 'trim', audio.get('playbackTime')]);
 
     this.child.stderr.on('data', (data) => {
       data = data + "";
