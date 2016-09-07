@@ -19,10 +19,13 @@ var Audio = bookshelf.Model.extend({
         return this.makeObject(audios, 'slug');
       });
   },
-  add: function(audio) {
-    console.log('audio:', audio);
-    return new Audio(audio).save();
+  findBySlug: function(slug) {
+    return this.where('slug', slug).fetch({withRelated: ['pila', 'repo']});
   },
+  // add: function(audio) {
+  //   console.log('audio:', audio);
+  //   return new Audio(audio).save();
+  // },
   makeObject: ModelHelpers.makeObject
 });
 
