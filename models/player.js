@@ -15,6 +15,7 @@ var Player = {
   play: function(slug, callback) {
     if (this.state == 'playing') {
       // If an Audio is currently playing pause it and play the new one, if it's different than the current one.
+      console.log('this.state:', this.state);
       if (this.audio.slug != slug) {
         this.pause(slug, (data) => {
           this.play(slug, (data) => {});
@@ -38,14 +39,15 @@ var Player = {
           });
       } else {
         // Play new Audio.
-        if (this.audio.slug != slug) {
-          Audio.findBySlug(slug, (audio) => {
-            console.log('this.play new audio slug:', slug);
-            this.playChild(audio);
-            this.state = 'playing';
+        if (this.audio.get('slug') != slug) {
+          Audio.findBySlug(slug)
+            .then((audio) => {
+              console.log('Playing:', audio.get('name'));
+              this.playChild(audio);
+              this.state = 'playing';
 
-            callback({message: 'playing', audio: this.audio});
-          });
+              callback({message: 'playing', audio: this.audio});
+            });
         } else {
           // Play current Audio
           console.log('this.play current audio slug:', this.audio.slug);
@@ -69,11 +71,9 @@ var Player = {
         this.audio.set('playedTime', Date.now());
       }
 
-      // Audio.update(this.audio, (data) => {
-      //   callback({message: data.message, duration: data.audio.duration, audio: data.audio})
-      // })
       this.audio.save()
         .then((audio) => {
+          console.log('audio saved:', audio.get('name'));
           callback({message: 'Updated audio: ' + audio.get('slug'), duration: this.duration, audio: audio})
         })
     } else {
@@ -90,12 +90,12 @@ var Player = {
     }
 
     if (this.audio) {
-      console.log('going:', direction, 'diffNum:', diffNum, 'this.audio.playbackTime:', this.audio.playbackTime, 'new this.audio.playbackTime:', this.audio.playbackTime + diffNum);
+      console.log('going:', direction, 'diffNum:', diffNum, 'this.audio.playbackTime:', this.audio.get('playbackTime'), 'new this.audio.playbackTime:', this.audio.get('playbackTime') + diffNum);
 
-      if ((this.audio.playbackTime + diffNum < 0) || (this.audio.playbackTime + diffNum > this.audio.duration)) {
-        this.audio.playbackTime = 0;
+      if ((this.audio.get('playbackTime') + diffNum < 0) || (this.audio.get('playbackTime') + diffNum > this.audio.get('duration'))) {
+        this.audio.set('playbackTime', 0);
       } else {
-        this.audio.playbackTime += diffNum;
+        this.audio.set('playbackTime', this.audio.get('playbackTime') + diffNum);
       }
 
       if (this.child) {
@@ -108,18 +108,23 @@ var Player = {
       callback({message: direction + 'ed', audio: this.audio});
     } else {
       Audio.findBySlug(slug, (audio) => {
-        console.log('going:', direction, 'audio.playbackTime:', audio.playbackTime, 'new audio.playbackTime:', audio.playbackTime + diffNum);
 
-        if ((audio.playbackTime + diffNum < 0) || (audio.playbackTime + diffNum > audio.duration)) {
-          audio.playbackTime = 0;
-        } else {
-          audio.playbackTime += diffNum;
-        }
 
-        this.playChild(audio);
-        this.state = 'playing';
+        Audio.findBySlug(slug)
+          .then((audio) => {
+            console.log('going:', direction, 'audio.playbackTime:', this.audio.get('playbackTime'), 'new audio.playbackTime:', this.audio.get('playbackTime') + diffNum);
 
-        callback({message: direction + 'ed', audio: this.audio});
+            if ((this.audio.get('playbackTime') + diffNum < 0) || (this.audio.get('playbackTime') + diffNum > audio.get('duration'))) {
+              this.audio.set('playbackTime', 0);
+            } else {
+              this.audio.set('playbackTime', this.audio.get('playbackTime') + diffNum);
+            }
+
+            this.playChild(audio);
+            this.state = 'playing';
+
+            callback({message: direction + 'ed', audio: this.audio});
+          });
       });
     }
   },
