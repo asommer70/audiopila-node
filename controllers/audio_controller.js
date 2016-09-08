@@ -3,8 +3,9 @@ var fs = require('fs');
 var Audio = require('../models').audio;
 var Player = require('../models/player');
 var AudioFile = require('../lib/audio_file');
+var ModelHelpers = require('../lib/model_helpers');
 
-var hostname = require('os').hostname().split('.').shift();
+var hostname = ModelHelpers.hostname;
 
 exports.audios = function(req, res, next) {
   Audio.all()

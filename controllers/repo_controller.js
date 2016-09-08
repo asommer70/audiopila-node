@@ -1,6 +1,8 @@
 var fs = require('fs');
 var Repo = require('../models').repo;
-var hostname = require('os').hostname().split('.').shift();
+var ModelHelpers = require('../lib/model_helpers');
+
+var hostname = ModelHelpers.hostname;
 
 exports.repos = function(req, res, next) {
   Repo.all()

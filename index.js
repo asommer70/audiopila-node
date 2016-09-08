@@ -7,7 +7,7 @@ var config = require('./config');
 var Pila = require('./models').pila;
 
 var ModelHelpers = require('./lib/model_helpers');
-var hostname = ModelHelpers.getSlug(ModelHelpers.hostname);
+var hostname = ModelHelpers.hostname;
 
 var app = express();
 app.use(routes);

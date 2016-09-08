@@ -4,8 +4,9 @@ var probe = require('node-ffprobe');
 
 var db = require('./index').db;
 var Pila = require('./pila');
+var ModelHelpers = require('../lib/model_helpers');
 
-var hostname = require('os').hostname().split('.').shift();
+var hostname = ModelHelpers.hostname;
 
 var Audio = {
   all: function(callback) {
