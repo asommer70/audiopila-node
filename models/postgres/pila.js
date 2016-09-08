@@ -26,6 +26,7 @@ var Pila = bookshelf.Model.extend({
         return this.makeObject(pilas, 'name');
       });
   },
+  dependents: ['repos', 'audios'],
   makeObject: ModelHelpers.makeObject
 });
 

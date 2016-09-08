@@ -6,7 +6,8 @@ var config = require('./config');
 
 var Pila = require('./models').pila;
 
-var hostname = os.hostname().split('.').shift();
+var ModelHelpers = require('./lib/model_helpers');
+var hostname = ModelHelpers.getSlug(ModelHelpers.hostname);
 
 var app = express();
 app.use(routes);
@@ -26,7 +27,7 @@ app.listen(config.port, config.ip, () => {
     platform: os.platform(),
     type: 'pila',
   }
-  
+
   Pila.findByName(hostname)
     .then((pila) => {
       if (pila == null) {

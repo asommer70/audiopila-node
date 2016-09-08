@@ -1,11 +1,13 @@
 var fs = require('fs');
 var request = require('request');
+var probe = require('node-ffprobe');
 
 var Pila = require('../models').pila;
 var Audio = require('../models').audio;
 var Player = require('../models/player');
+var ModelHelpers = require('../lib/model_helpers');
 
-var hostname = require('os').hostname().split('.').shift();
+var hostname = ModelHelpers.hostname;
 
 exports.pilas = function(req, res, next) {
   Pila.all()
@@ -15,47 +17,56 @@ exports.pilas = function(req, res, next) {
 }
 
 exports.pila = function(req, res, next) {
-  Pila.findByName(req.params.name, (pila) => {
-    if (!pila) {
-      return res.status(404).json({message: 'Pila not found...'});
-    }
-    res.json(pila);
+  Pila.findByName(req.params.name)
+    .then((pila) => {
+      if (!pila) {
+        return res.status(404).json({message: 'Pila not found...'});
+      }
+      res.json(pila);
   })
 }
 
 exports.status = function(req, res, next) {
-  Pila.findByName(hostname, (pila) => {
-    var player = {
-      state: Player.state || 'stopped',
-    }
-    if (Player.audio !== undefined) {
-      player.audio = Player.audio;
-      player.state = Player.state;
-    } else {
-      var sortable = [];
-      for (var slug in pila.audios) {
-        sortable.push(pila.audios[slug])
+  Pila.findByName(hostname)
+    .then((pila) => {
+      var player = {
+        state: Player.state || 'stopped',
+      }
+      if (Player.audio !== undefined) {
+        player.audio = Player.audio;
+        player.state = Player.state;
+      } else {
+        var sortable = [];
+        for (var slug in pila.audios) {
+          sortable.push(pila.audios[slug])
+        }
+
+        sortable.sort(function(a, b) {
+          if (a.playedTime !== undefined && b.playedTime !== undefined) {
+            return b.playedTime - a.playedTime;
+          } else {
+            return -1
+          }
+        })
+
+        player.audio = sortable[0];
       }
 
-      sortable.sort(function(a, b) {
-        if (a.playedTime !== undefined && b.playedTime !== undefined) {
-          return b.playedTime - a.playedTime;
-        } else {
-          return -1
-        }
-      })
-
-      player.audio = sortable[0];
-    }
-
-    res.json({player: player, pila: pila});
-  })
+      res.json({player: player, pila: pila});
+    })
 }
 
 exports.deletePila = function(req, res, next) {
-  Pila.deletePila(req.params.name, (pilas) => {
-    res.json({message: 'Pila successfully deleted.', pilas: pilas});
-  })
+  Pila.findByName(hostname)
+    .then((pila) => {
+      pila.destroy()
+        .then((pila) => {
+          res.redirect('/pilas');
+        })
+        .catch((error) => {
+          res.status(500).json({message: 'Pila not deleted.', detail: error.detail, code: error.code, constraint: error.constraint})
+        })
+    })
 }
 
 exports.sync = function(req, res, next) {
@@ -114,25 +125,36 @@ exports.upload = function(req, res, next) {
     req.busboy.on('field', (key, value, keyTruncated, valueTruncated) => {
       if (key == 'slug') {
         req.busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
-          Pila.findByName(hostname, (pila) => {
-            if (pila) {
-              var repo = pila.repositories[value];
+          Pila.findByName(hostname)
+            .then((pila) => {
+              var repo = pila.related('repos').find((repo) => {
+                return repo.get('slug') == value
+              })
 
-              fstream = fs.createWriteStream(repo.path + '/' + filename);
+              fstream = fs.createWriteStream(repo.get('path') + '/' + filename);
               file.pipe(fstream);
               fstream.on('close', () => {
-                console.log(filename + ' uploaded to: ' + repo.path)
+                console.log(filename + ' uploaded to: ' + repo.get('path'))
 
-                // Update the Pila.audios list.
-                Audio.add(repo.name, repo.path, req.protocol + '://' + req.get('host'), (audios) => {
-                  res.json({message: 'Successfully added audios.', audios: audios});
-                })
+                probe(repo.get('path') + '/' + filename, (err, probeData) => {
+                  var slug = ModelHelpers.getSlug(filename);
 
+                  new Audio({
+                    name: probeData.filename,
+                    slug: slug,
+                    path: probeData.file,
+                    repo_id: repo.get('id'),
+                    pila_id: pila.get('id'),
+                    httpUrl: req.protocol + '://' + req.get('host') + '/audios/' + slug,
+                    type: 'audio',
+                    duration: probeData.format.duration
+                  }).save()
+                    .then((audio) => {
+                      res.redirect('/audios')
+                    })
+                });
               });
-            } else {
-              res.json({message: 'Audio could not be uploaded.'});
-            }
-          })
+            })
         });
       }
     });
