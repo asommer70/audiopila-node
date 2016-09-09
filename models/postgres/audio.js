@@ -25,8 +25,7 @@ var Audio = bookshelf.Model.extend({
   delete: function(slug) {
     return this.where('slug', slug).fetch({withRelated: ['pila', 'repo']})
       .then((audio) => {
-        audio.destroy();
-        return audio;
+        return audio.destroy();
       })
   },
   makeObject: ModelHelpers.makeObject
