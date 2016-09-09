@@ -1,8 +1,8 @@
 var expect = require('chai').expect;
 
 describe('Pila', function() {
-  var Pila = require('../models').pila;
-  var hostname = require('../lib/model_helpers').hostname;
+  var Pila = require('../../models').pila;
+  var hostname = require('../../lib/model_helpers').hostname;
 
   describe('findByName', function() {
     it('should return Pila object', function(done) {
@@ -69,8 +69,8 @@ describe('Pila', function() {
 
   describe('Has Many', function() {
     describe('repos and audios', function() {
-      var Repo = require('../models').repo;
-      var Audio = require('../models').audio;
+      var Repo = require('../../models').repo;
+      var Audio = require('../../models').audio;
 
       before(function(done) {
         new Repo({

@@ -4,9 +4,9 @@
   "description": "Audio Pila! Node",
   "main": "index.js",
   "scripts": {
-    "test": "ENV=test node_modules/.bin/mocha",
-    "test:min": "ENV=test node_modules/.bin/mocha --reporter min",
-    "test:watch": "ENV=test node_modules/.bin/mocha --watch ./test ./",
+    "test": "ENV=test node_modules/.bin/mocha --recursive",
+    "test:min": "ENV=test node_modules/.bin/mocha --recursive --reporter min",
+    "test:watch": "ENV=test node_modules/.bin/mocha --recursive --watch ./test ./",
     "start": "nodemon index.js",
     "migrate": "node_modules/.bin/knex --knexfile config/knexfile.js --cwd models/postgres migrate:latest",
     "migrate:test": "node_modules/.bin/knex --knexfile config/knexfile.js --cwd models/postgres --env test migrate:latest",
@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "mocha": "^3.0.2"
+    "mocha": "^3.0.2",
+    "unit.js": "^2.0.0"
   }
 }

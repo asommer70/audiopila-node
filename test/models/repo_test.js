@@ -1,8 +1,8 @@
 var expect = require('chai').expect;
 
 describe('Repo', function() {
-  var Repo = require('../models').repo;
-  var hostname = require('../lib/model_helpers').hostname;
+  var Repo = require('../../models').repo;
+  var hostname = require('../../lib/model_helpers').hostname;
   var repoObj = {
     name: 'Adam Music',
     path: '/Users/adam/Music',
@@ -61,7 +61,7 @@ describe('Repo', function() {
   });
 
   describe('Has Many', function() {
-    var Audio = require('../models').audio;
+    var Audio = require('../../models').audio;
 
     before(function(done) {
       Repo.findBySlug(repoObj.slug)

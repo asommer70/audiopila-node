@@ -1,7 +1,7 @@
 var expect = require('chai').expect;
 
 describe('ModelHelpers', function() {
-  var ModelHelpers = require('../lib/model_helpers');
+  var ModelHelpers = require('../../lib/model_helpers');
 
   describe('hostname', function() {
     it('should return slugified string from hostname', function() {

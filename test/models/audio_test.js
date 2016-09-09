@@ -1,10 +1,10 @@
 var expect = require('chai').expect;
 
 describe('Audio', function() {
-  var Audio = require('../models').audio;
-  var Pila = require('../models').pila;
-  var Repo = require('../models').repo;
-  var hostname = require('../lib/model_helpers').hostname;
+  var Audio = require('../../models').audio;
+  var Pila = require('../../models').pila;
+  var Repo = require('../../models').repo;
+  var hostname = require('../../lib/model_helpers').hostname;
   var musicRepo, audioDbObj;
 
   var audioObj = {
