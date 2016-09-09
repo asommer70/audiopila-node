@@ -1,4 +1,4 @@
-var config = require('../../config/knexfile')['development'];
+var config = require('../../config/knexfile')[process.env.ENV];
 
 var knex = require('knex')(config);
 var bookshelf = require('bookshelf')(knex);

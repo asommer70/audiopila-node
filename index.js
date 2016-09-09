@@ -2,7 +2,7 @@ var express = require('express');
 var routes = require('./routes');
 var bodyParser = require('body-parser');
 var os = require('os');
-var config = require('./config');
+var config = require('./config')[process.env.ENV];
 
 var Pila = require('./models').pila;
 

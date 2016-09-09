@@ -1,7 +1,11 @@
 var expect = require('chai').expect;
 
-describe('Mocha', function() {
-  it('should return Pila object', function() {
-    expect(true).to.be.ok;
+describe('Pila', function() {
+  var Pila = require('../models').pila;
+
+  describe('findByName', function() {
+    it('should return Pila object', function() {
+      expect(true).to.be.ok;
+    })
   })
 })

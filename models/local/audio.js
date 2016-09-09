@@ -4,7 +4,7 @@ var probe = require('node-ffprobe');
 
 var db = require('./index').db;
 var Pila = require('./pila');
-var ModelHelpers = require('../lib/model_helpers');
+var ModelHelpers = require('../../lib/model_helpers');
 
 var hostname = ModelHelpers.hostname;
 

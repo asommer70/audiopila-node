@@ -1,6 +1,6 @@
 module.exports = {
 
-  development: {
+  dev: {
     client: 'pg',
     connection: {
       database: 'audiopila',
@@ -16,7 +16,23 @@ module.exports = {
     }
   },
 
-  staging: {
+  test: {
+    client: 'pg',
+    connection: {
+      database: 'audiopila_test',
+      user:     '',
+      password: ''
+    },
+    pool: {
+      min: 2,
+      max: 10
+    },
+    migrations: {
+      tableName: 'knex_migrations'
+    }
+  },
+
+  stage: {
     client: 'postgresql',
     connection: {
       database: 'my_db',
@@ -32,7 +48,7 @@ module.exports = {
     }
   },
 
-  production: {
+  pro: {
     client: 'postgresql',
     connection: {
       database: 'my_db',
