@@ -22,6 +22,7 @@ var Repo = bookshelf.Model.extend({
   findBySlug: function(slug) {
     return this.where('slug', slug).fetch({withRelated: ['pila', 'audios']});
   },
+  dependents: ['audios'],
   makeObject: ModelHelpers.makeObject
 });
 

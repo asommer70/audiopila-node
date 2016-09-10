@@ -13,25 +13,12 @@ describe('Audio File', function() {
 
   describe('all', function() {
     after(function(done) {
-      Audio.fetchAll()
-        .then((audios) => {
-          var count = 1;
-          audios.forEach((audio) => {
-            audio.destroy()
-              .then((audio) => {
-                count++
-
-                if (count == audios.length) {
-                  Repo.findBySlug('fixture_repo')
-                    .then((repo) => {
-                      repo.destroy()
-                        .then((repo) => {
-                          done();
-                        });
-                    });
-                }
-              });
-          });
+      Repo.findBySlug('fixture_repo')
+        .then((repo) => {
+          repo.destroy()
+            .then((repo) => {
+              done();
+            });
         });
     });
 
@@ -46,7 +33,7 @@ describe('Audio File', function() {
             });
         });
     });
-  })
+  });
 
   describe('Other Methods', function() {
     var localPila, localRepo, localFiles;
@@ -119,19 +106,13 @@ describe('Audio File', function() {
       });
 
       after(function(done) {
-        Audio.findBySlug('electronic_ogg')
-          .then((audio) => {
-            audio.destroy()
-              .then((audio) => {
-                Repo.findBySlug('fixture_repo')
-                  .then((repo) => {
-                    repo.destroy()
-                      .then((repo) => {
-                        done();
-                      });
-                  });
-              })
-          })
+        Repo.findBySlug('fixture_repo')
+          .then((repo) => {
+            repo.destroy()
+              .then((repo) => {
+                done();
+              });
+          });
       });
 
       it('returns a new Audio', function(done) {
@@ -151,25 +132,12 @@ describe('Audio File', function() {
       });
 
       after(function(done) {
-        Audio.fetchAll()
-          .then((audios) => {
-            var count = 1;
-            audios.forEach((audio) => {
-              audio.destroy()
-                .then((audio) => {
-                  count++
-
-                  if (count == audios.length) {
-                    Repo.findBySlug('fixture_repo')
-                      .then((repo) => {
-                        repo.destroy()
-                          .then((repo) => {
-                            done();
-                          });
-                      });
-                  }
-                });
-            });
+        Repo.findBySlug('fixture_repo')
+          .then((repo) => {
+            repo.destroy()
+              .then((repo) => {
+                done();
+              });
           });
       });
 
@@ -177,8 +145,8 @@ describe('Audio File', function() {
         AudioFile.getAudios(localPila, localRepo, (audios) => {
           expect(3).to.be.equal(Object.keys(audios).length);
           done();
-        })
-      })
-    })
-  })
+        });
+      });
+    });
+  });
 });

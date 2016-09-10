@@ -34,13 +34,10 @@ describe('Audio', function() {
   })
 
   after(function(done) {
-    audioDbObj.destroy()
-      .then((audio) => {
-        musicRepo.destroy()
-          .then((repo) => {
-            done();
-          })
-      })
+    musicRepo.destroy()
+      .then((repo) => {
+        done();
+      });
   })
 
   describe('findBySlug', function() {
