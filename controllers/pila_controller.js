@@ -1,6 +1,7 @@
 var Pila = require('../models').pila;
 var Audio = require('../models').audio;
 var Player = require('../models/player');
+var Sync = require('../lib/sync');
 var ModelHelpers = require('../lib/model_helpers');
 
 var hostname = ModelHelpers.hostname;
@@ -66,7 +67,11 @@ exports.deletePila = function(req, res, next) {
 }
 
 exports.sync = function(req, res, next) {
-  res.json({message: 'Sync successful.', pila: pila});
+  var urls = [req.protocol + '://' + req.get('host'), req.originalUrl];
+  Sync.now(req.body, urls)
+    .then((pila) => {
+      res.json({message: 'Sync successful.', pila: pila});
+    })
 
   // // Update the local pila entry with httpUrl, lastSynced, syncedFrom, and Audios?
   // var me = {

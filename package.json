@@ -8,7 +8,8 @@
     "test:min": "ENV=test node_modules/.bin/mocha --recursive --reporter min",
     "test:watch": "ENV=test node_modules/.bin/mocha --recursive --watch ./test ./",
     "start": "nodemon index.js",
-    "migrate": "node_modules/.bin/knex --knexfile config/knexfile.js --cwd models/postgres migrate:latest",
+    "migrate": "node_modules/.bin/knex --knexfile config/knexfile.js --cwd models/postgres --env dev migrate:latest",
+    "migrate:pro": "node_modules/.bin/knex --knexfile config/knexfile.js --cwd models/postgres --env pro migrate:latest",
     "migrate:test": "node_modules/.bin/knex --knexfile config/knexfile.js --cwd models/postgres --env test migrate:latest",
     "migrate:make": "node_modules/.bin/knex migrate:make --knexfile config/knexfile.js --cwd models/postgres",
     "migrate:rollback": "node_modules/.bin/knex migrate:rollback --knexfile config/knexfile.js --cwd models/postgres"
