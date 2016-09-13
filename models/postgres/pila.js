@@ -17,6 +17,13 @@ var Pila = bookshelf.Model.extend({
     return this.where('name', name).fetch({withRelated: ['audios', 'repos']});
   },
   addPila: function(pila) {
+    if (pila.repos !== undefined) {
+      delete pila['repos'];
+    }
+    if (pila.audios !== undefined) {
+      delete pila['audios'];
+    }
+    
     return new Pila(pila).save();
   },
   all: function() {
