@@ -53,7 +53,7 @@ describe('Repo', function() {
         Repo.findBySlug(repoObj.slug)
           .then((repo) => {
             // console.log('repo.pila:', repo.related('pila'));
-            expect('linux').to.be.equal(repo.related('pila').get('name'));
+            expect(hostname).to.be.equal(repo.related('pila').get('name'));
             done();
           })
       });

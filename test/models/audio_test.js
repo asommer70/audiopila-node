@@ -87,7 +87,7 @@ describe('Audio', function() {
       it('should belong to a Pila', function(done) {
         Audio.findBySlug('taco_mp3')
           .then((audio) => {
-            expect('linux').to.be.equal(audio.related('pila').get('name'));
+            expect(hostname).to.be.equal(audio.related('pila').get('name'));
             done();
           })
       })

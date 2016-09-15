@@ -5,7 +5,7 @@ describe('ModelHelpers', function() {
 
   describe('hostname', function() {
     it('should return slugified string from hostname', function() {
-      expect(ModelHelpers.hostname).to.eq('linux');
+      expect(ModelHelpers.hostname).to.eq(require('../../lib/model_helpers').hostname);
     })
   });
 
