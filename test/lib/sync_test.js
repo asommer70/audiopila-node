@@ -51,7 +51,7 @@ describe('Sync', function() {
         name: "taco.mp3",
         slug: "taco_mp3",
         path: "/Documents/Taco.mp3",
-        playedTime: 1473349451922,
+        playedTime: 1473349451933,
         repo: "sync_repo",
         pila: "android_phone"
       }
@@ -175,19 +175,19 @@ describe('Sync', function() {
           sync_repo.save()
             .then((sr) => {
 
-
               new Repo({
                 name: 'Home Music',
                 path: '/Users/adam/Music',
                 slug: 'home_music',
-                pila_id: 1
+                pila_id: 1,
+                type: "repo",
               }).save()
                 .then((repo) => {
-                  // console.log('syncAudios:', syncAudios);
-                  syncAudios.taco_mp3.playbackTime = 10;
-                  var localAudio = new Audio(syncAudios.taco_mp3)
+                  var localAudio = new Audio(syncAudios.taco_mp3);
                   localAudio.set('pila_id', 1);
                   localAudio.set('repo_id', repo.get('id'));
+                  localAudio.set('playedTime', 1473349451810);
+                  localAudio.set('playbackTime', 10);
 
                   localAudio.save()
                     .then((audio) => {
