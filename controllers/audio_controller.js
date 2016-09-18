@@ -46,7 +46,8 @@ exports.addRepoAudios = function(req, res, next) {
 
   AudioFile.add(req.body.name, req.body.path, baseUrl)
     .then((audios) => {
-      res.json(audios);
+      // res.json(audios);
+      res.redirect('/audios');
     });
 }
 
