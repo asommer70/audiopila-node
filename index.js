@@ -3,7 +3,6 @@ var routes = require('./routes');
 var bodyParser = require('body-parser');
 var os = require('os');
 var config = require('./config')[process.env.ENV];
-console.log('config:', config);
 
 var Pila = require('./models').pila;
 
