@@ -115,11 +115,11 @@ describe('Audio File', function() {
           });
       });
 
-      it('returns a new Audio', function(done) {
-        AudioFile.getAudioDetails(localFiles[0], localPila, localRepo, (audio) => {
-          expect('electronic_ogg').to.be.equal(audio.get('slug'));
-          done();
-        })
+      it('returns a Audio details', function(done) {
+        var deets = AudioFile.getAudioDetails(localFiles[0]);
+        expect('15.864671').to.be.equal(deets.format.duration);
+        expect(localFiles[0]).to.equal(deets.format.filename);
+        done();
       });
     });
 
@@ -148,5 +148,38 @@ describe('Audio File', function() {
         });
       });
     });
+
+    describe('create Audio', function() {
+      before(function(done) {
+        AudioFile.createRepo(localPila, 'Fixture Repo', repoDir, (repo) => {
+          localRepo = repo;
+
+          AudioFile.getLocalFiles(repo.get('path'), (error, files) => {
+            localFiles = files;
+            done();
+          })
+        });
+      });
+
+      after(function(done) {
+        Repo.findBySlug('fixture_repo')
+          .then((repo) => {
+            repo.destroy()
+              .then((repo) => {
+                done();
+              });
+          });
+      });
+
+      it('returns an Audio', function(done) {
+
+        AudioFile.createAudio(localFiles[0], localPila, localRepo, (audio) => {
+          expect(15.864671).to.be.equal(audio.get('duration'));
+          expect(localFiles[0]).to.equal(audio.get('path'));
+          done();
+        });
+      });
+    });
+
   });
 });
