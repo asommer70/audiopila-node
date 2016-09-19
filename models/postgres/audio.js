@@ -13,8 +13,11 @@ var Audio = bookshelf.Model.extend({
   },
   hasTimestamps: true
 }, {
-  all: function() {
-    return this.fetchAll()
+  all: function(page) {
+    if (!page) {
+      page = 0;
+    }
+    return this.fetchPage({page: page, pageSize: 20})
       .then((audios) => {
         return this.makeObject(audios, 'slug');
       });

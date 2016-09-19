@@ -51,8 +51,38 @@ describe('Audio', function() {
   })
 
   describe('all', function() {
-    it('should return all Audios', function(done) {
+    before(function(done) {
+      var audios = require('../fixtures/audios');
+      var keys = Object.keys(audios);
+      var counter = 0;
+      keys.forEach((key) => {
+        var audio = new Audio(audios[key])
+        delete audio['id'];
+        audio.set('repo_id', musicRepo.get('id'));
+        audio.save()
+          .then((audio) => {
+            counter++
+            if(counter == keys.length) {
+              done();
+            }
+          })
+          .catch((error) => {
+            console.log('error:', error);
+          })
+      })
+    });
+
+
+    it('should return page one of Audios', function(done) {
       Audio.all()
+        .then((audios) => {
+          expect(20).to.be.equal(Object.keys(audios).length);
+          done();
+        })
+    })
+
+    it('should return page two of Audios', function(done) {
+      Audio.all(2)
         .then((audios) => {
           expect(1).to.be.equal(Object.keys(audios).length);
           done();
