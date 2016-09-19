@@ -52,7 +52,7 @@ describe('Playlist', function() {
     });
   });
 
-  describe('Has Many Audios', function() {
+  describe('belongsToMany Audios', function() {
     var audioObj = {
       name: 'taco.mp3',
       path: '/Users/adam/Music/taco.mp3',
@@ -83,14 +83,13 @@ describe('Playlist', function() {
                 delete audio['id'];
                 audio.set('repo_id', musicRepo.get('id'));
 
-                var parts = audio.get('path').split('/');
-                if (parts[5] == playlist.get('name')) {
-                  console.log('audio.slug:', audio.get('slug'));
-                  audio.playlists().attach([playlist]);
-                }
-
                 audio.save()
                   .then((audio) => {
+                    var parts = audio.get('path').split('/');
+                    if (parts[5] == playlist.get('name')) {
+                      audio.playlists().attach([playlist]);
+                    }
+
                     counter++
                     if(counter == keys.length) {
                       done();
@@ -117,18 +116,20 @@ describe('Playlist', function() {
         });
     });
 
-    it('should haveMany Audios', function(done) {
-      Audio.findBySlug('05_ghosts_that_we_knew_mp3')
+    it('should have many Audios', function(done) {
+      Playlist.findBySlug('babel')
+        .then((playlist) => {
+          expect(6).to.be.equal(playlist.related('audios').length);
+          done();
+        });
+    });
+
+    it('should (an Audio) have a Playlist', function(done) {
+      Audio.findBySlug('07_lovers_eyes_mp3')
         .then((audio) => {
-          console.log('audio.playlists', audio.related('playlists'));
+          expect(1).to.be.equal(audio.related('playlists').length);
           done();
         })
-      // Playlist.findBySlug('babel')
-      //   .then((playlist) => {
-      //     console.log('playlist.audios:', playlist.audios().length);
-      //     expect(8).to.be.equal(playlist.related('audios').length);
-      //     done();
-      //   });
-    });
+    })
   });
 });

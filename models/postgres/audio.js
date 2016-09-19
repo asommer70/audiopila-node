@@ -13,7 +13,7 @@ var Audio = bookshelf.Model.extend({
     return this.belongsTo('Repo');
   },
   playlists: function() {
-    return this.belongsToMany(Playlist).query({where: {playlist: 'slug'}});
+    return this.belongsToMany(Playlist);
   },
   hasTimestamps: true
 }, {
@@ -30,12 +30,12 @@ var Audio = bookshelf.Model.extend({
     return this.where('slug', slug).fetch({withRelated: ['pila', 'repo', 'playlists']});
   },
   delete: function(slug) {
-    return this.where('slug', slug).fetch({withRelated: ['pila', 'repo']})
+    return this.where('slug', slug).fetch()
       .then((audio) => {
         return audio.destroy();
       })
   },
-  dependents: ['audios_playlists'],
+  dependents: ['playlists'],
   makeObject: ModelHelpers.makeObject
 });
 

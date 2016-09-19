@@ -22,7 +22,7 @@ var Playlist = bookshelf.Model.extend({
   findBySlug: function(slug) {
     return this.where('slug', slug).fetch({withRelated: ['pila', 'audios']});
   },
-  dependents: ['audios_playlists'],
+  dependents: ['audios'],
   makeObject: ModelHelpers.makeObject
 });
 
