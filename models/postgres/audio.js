@@ -1,6 +1,7 @@
 var bookshelf = require('./db');
 var Pila = require('./pila');
 var Repo = require('./repo');
+var Playlist = require('./playlist');
 var ModelHelpers = require('../../lib/model_helpers');
 
 var Audio = bookshelf.Model.extend({
@@ -10,6 +11,9 @@ var Audio = bookshelf.Model.extend({
   },
   repo: function() {
     return this.belongsTo('Repo');
+  },
+  playlists: function() {
+    return this.belongsToMany(Playlist).query({where: {playlist: 'slug'}});
   },
   hasTimestamps: true
 }, {
@@ -23,7 +27,7 @@ var Audio = bookshelf.Model.extend({
       });
   },
   findBySlug: function(slug) {
-    return this.where('slug', slug).fetch({withRelated: ['pila', 'repo']});
+    return this.where('slug', slug).fetch({withRelated: ['pila', 'repo', 'playlists']});
   },
   delete: function(slug) {
     return this.where('slug', slug).fetch({withRelated: ['pila', 'repo']})
@@ -31,6 +35,7 @@ var Audio = bookshelf.Model.extend({
         return audio.destroy();
       })
   },
+  dependents: ['audios_playlists'],
   makeObject: ModelHelpers.makeObject
 });
 

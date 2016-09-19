@@ -7,6 +7,7 @@ switch (config.db) {
     store.pila = require('./postgres/pila');
     store.audio = require('./postgres/audio');
     store.repo = require('./postgres/repo');
+    store.playlist = require('./postgres/playlist');
     break;
   default:
     console.log('store dialect is local nedb...');

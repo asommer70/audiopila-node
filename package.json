@@ -14,7 +14,8 @@
     "migrate:pro": "node_modules/.bin/knex --knexfile config/knexfile.js --cwd models/postgres --env pro migrate:latest",
     "migrate:test": "node_modules/.bin/knex --knexfile config/knexfile.js --cwd models/postgres --env test migrate:latest",
     "migrate:make": "node_modules/.bin/knex migrate:make --knexfile config/knexfile.js --cwd models/postgres",
-    "migrate:rollback": "node_modules/.bin/knex migrate:rollback --knexfile config/knexfile.js --cwd models/postgres"
+    "migrate:rollback": "node_modules/.bin/knex migrate:rollback --knexfile config/knexfile.js --env dev --cwd models/postgres",
+    "migrate:rollback:test": "node_modules/.bin/knex migrate:rollback --knexfile config/knexfile.js --env test --cwd models/postgres"
   },
   "keywords": [
     "audio",
