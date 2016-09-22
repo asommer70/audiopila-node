@@ -13,7 +13,7 @@ var Audio = bookshelf.Model.extend({
     return this.belongsTo('Repo');
   },
   playlists: function() {
-    return this.belongsToMany(Playlist);
+    return this.belongsToMany('Playlist');
   },
   hasTimestamps: true
 }, {

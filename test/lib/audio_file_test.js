@@ -9,6 +9,7 @@ describe('Audio File', function() {
   var Audio = require('../../models').audio;
   var Pila = require('../../models').pila;
   var Repo = require('../../models').repo;
+  var Playlist = require('../../models').playlist;
   var hostname = require('../../lib/model_helpers').hostname;
 
   describe('all', function() {
@@ -17,7 +18,13 @@ describe('Audio File', function() {
         .then((repo) => {
           repo.destroy()
             .then((repo) => {
-              done();
+              Playlist.findBySlug('electronics')
+                .then((playlist) => {
+                  playlist.destroy()
+                    .then((playlist) => {
+                      done();
+                    })
+                })
             });
         });
     });
@@ -173,9 +180,45 @@ describe('Audio File', function() {
 
       it('returns an Audio', function(done) {
 
-        AudioFile.createAudio(localFiles[0], localPila, localRepo, (audio) => {
+        AudioFile.createAudio(localFiles[0], localPila, localRepo, null, (audio) => {
           expect(15.864671).to.be.equal(audio.get('duration'));
           expect(localFiles[0]).to.equal(audio.get('path'));
+          done();
+        });
+      });
+    });
+
+    describe('checkPlaylist', function() {
+      before(function(done) {
+        AudioFile.createRepo(localPila, 'Fixture Repo', repoDir, (repo) => {
+          localRepo = repo;
+          AudioFile.getLocalFiles(repo.get('path'), (error, files) => {
+            localFiles = files;
+            done();
+          })
+        });
+      });
+
+      after(function(done) {
+        Repo.findBySlug('fixture_repo')
+          .then((repo) => {
+            repo.destroy()
+              .then((repo) => {
+                Playlist.findBySlug('electronics')
+                  .then((playlist) => {
+                    playlist.destroy()
+                      .then((playlist) => {
+                        done();
+                      })
+                  })
+              });
+          });
+      });
+
+      it('returns a Playlist', function(done) {
+
+        AudioFile.checkPlaylist(localRepo, localFiles[localFiles.length - 1], (playlist) => {
+          expect('electronics').to.be.equal(playlist.get('name'));
           done();
         });
       });

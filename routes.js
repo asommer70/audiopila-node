@@ -8,6 +8,7 @@ var router = express.Router();
 var PilaController = require('./controllers/pila_controller');
 var AudioController = require('./controllers/audio_controller');
 var RepoController = require('./controllers/repo_controller');
+var PlaylistController = require('./controllers/playlist_controller');
 
 router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
@@ -33,6 +34,9 @@ router.get('/audios/:slug', AudioController.audio);
 
 // GET /repos (index of repositories)
 router.get('/repos', RepoController.repos);
+
+// GET /playlists (index of repositories)
+router.get('/playlists', PlaylistController.playlists);
 
 // GET /stats (data about this Pila)
 router.get('/status', PilaController.status);
