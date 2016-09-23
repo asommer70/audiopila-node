@@ -38,6 +38,9 @@ router.get('/repos', RepoController.repos);
 // GET /playlists (index of repositories)
 router.get('/playlists', PlaylistController.playlists);
 
+// GET /playlists/:slug (details for a playlist)
+router.get('/playlists/:slug', PlaylistController.playlist);
+
 // GET /stats (data about this Pila)
 router.get('/status', PilaController.status);
 
@@ -50,6 +53,12 @@ router.post('/sync', PilaController.sync);
 
 // POST /repos/:slug (upload Audios to repository)
 router.post('/repos/:slug', PilaController.upload);
+
+// POST /playlists (add Playlist)
+router.post('/playlists', PlaylistController.add);
+
+// POST /playlist/audio (add Audio to a Playlist)
+router.post('/playlist/audio', PlaylistController.addAudio);
 
 
 // PUT /audios/:slug (play Audio)

@@ -13,6 +13,9 @@ var Playlist = bookshelf.Model.extend({
   },
   hasTimestamps: true
 }, {
+  add: function(name, pila_id) {
+    return new Playlist({name: name, slug: ModelHelpers.getSlug(name), pila_id: pila_id}).save();
+  },
   all: function() {
     return this.fetchAll()
       .then((playlists) => {
