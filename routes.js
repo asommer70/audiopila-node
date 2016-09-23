@@ -58,7 +58,7 @@ router.post('/repos/:slug', PilaController.upload);
 router.post('/playlists', PlaylistController.add);
 
 // POST /playlist/audio (add Audio to a Playlist)
-router.post('/playlist/audio', PlaylistController.addAudio);
+router.post('/playlist/audio', PlaylistController.changeAudio);
 
 
 // PUT /audios/:slug (play Audio)
@@ -70,6 +70,12 @@ router.delete('/pilas/:name', PilaController.deletePila);
 
 // DELETE /audios/:slug (remove audio)
 router.delete('/audios/:slug', AudioController.deleteAudio);
+
+// DELETE /playlists/:slug (remove playlist)
+router.delete('/playlists/:slug', PlaylistController.delete);
+
+// DELETE /playlist/audio (remove Audio from a Playlist)
+router.delete('/playlist/audio', PlaylistController.changeAudio);
 
 
 module.exports = router;
