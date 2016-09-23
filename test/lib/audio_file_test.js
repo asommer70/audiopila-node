@@ -20,10 +20,14 @@ describe('Audio File', function() {
             .then((repo) => {
               Playlist.findBySlug('electronics')
                 .then((playlist) => {
-                  playlist.destroy()
-                    .then((playlist) => {
-                      done();
-                    })
+                  if (playlist) {
+                    playlist.destroy()
+                      .then((playlist) => {
+                        done();
+                      })
+                  } else {
+                    done();
+                  }
                 })
             });
         });
@@ -206,10 +210,14 @@ describe('Audio File', function() {
               .then((repo) => {
                 Playlist.findBySlug('electronics')
                   .then((playlist) => {
-                    playlist.destroy()
-                      .then((playlist) => {
-                        done();
-                      })
+                    if (playlist) {
+                      playlist.destroy()
+                        .then((playlist) => {
+                          done();
+                        })
+                    } else {
+                      done();
+                    }
                   })
               });
           });
